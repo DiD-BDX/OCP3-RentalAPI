@@ -1,6 +1,6 @@
 package com.ocp3.rental.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
+/* import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -8,12 +8,12 @@ import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBUserRepository;
 
 import jakarta.transaction.Transactional;
-import java.util.List;
+import java.util.List; */
 
-@Service
+/* @Service */
 public class UserService {
 
-    @Autowired
+    /* @Autowired
     private DBUserRepository userRepository;
 
     @Autowired
@@ -26,5 +26,5 @@ public class UserService {
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
             userRepository.save(user);
         }
-    }
+    } */
 }
