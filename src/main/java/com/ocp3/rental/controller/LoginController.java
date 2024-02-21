@@ -1,4 +1,4 @@
-package com.ocp3.rental.controller;
+/* package com.ocp3.rental.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,3 +25,4 @@ public class LoginController {
 	}
 	
 }
+ */

@@ -1,4 +1,5 @@
 package com.ocp3.rental.model;
+import java.util.Date;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +14,8 @@ public class USERS {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String email;
-	private String password;  
-
+	private String password;
+	private String name;  
+	private Date created_at;
+	private Date updated_at;
 }
