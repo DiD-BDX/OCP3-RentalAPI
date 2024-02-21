@@ -13,6 +13,11 @@ import org.springframework.stereotype.Service;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBUserRepository;
 
+
+// Cette classe fournit un moyen de charger les détails d'un utilisateur à partir de la base de données
+// pour l'authentification avec Spring Security. Elle attribue également une autorité de base "ROLE_USER" à tous 
+// les utilisateurs.
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 	@Autowired
@@ -20,9 +25,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 	@Override
 	public UserDetails loadUserByUsername(String useremail) throws UsernameNotFoundException {
-		USERS user = dbUserRepository.findByEmail(useremail);
+		USERS userByEmail = dbUserRepository.findByEmail(useremail);
 		
-		return new User(user.getEmail(), user.getPassword(), getGrantedAuthorities());
+		return new User(userByEmail.getEmail(), userByEmail.getPassword(), getGrantedAuthorities());
 	}
 
 	private List<GrantedAuthority> getGrantedAuthorities() {
