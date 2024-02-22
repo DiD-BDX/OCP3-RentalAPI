@@ -2,13 +2,10 @@ package com.ocp3.rental.configuration;
 
 import javax.crypto.spec.SecretKeySpec;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -35,54 +32,56 @@ public class SecurityConfig {
 	public JwtEncoder jwtEncoder() {
 		return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
 	}
-	
 	@Bean
 	public JwtDecoder jwtDecoder() {
 		SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length,"RSA");
 		return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
 	}
-
 	@Bean
     public PasswordEncoder rentalPasswordEncoder() {
         return new BCryptPasswordEncoder();
     } 
 
-    @Autowired
-	private CustomUserDetailsService customUserDetailsService;
-@Order(1)
-@Bean
-public SecurityFilterChain publicApiSecurityFilterChain(HttpSecurity http) throws Exception {
-    return http
-        .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-        )
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .formLogin(formLogin -> formLogin.disable())
-        .build();
+   
+	@Order(1)
+	@Bean
+	public SecurityFilterChain publicApiSecurityFilterChain(HttpSecurity http) throws Exception {
+		return http
+			.authorizeHttpRequests(authorize -> authorize
+				.requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+			)
+			.csrf(csrf -> csrf.disable())
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.formLogin(formLogin -> formLogin.disable())
+			.build();
+	}
+
+	@Order(2)
+	@Bean
+	public SecurityFilterChain protectedApiSecurityFilterChain(HttpSecurity http) throws Exception {
+		return http
+			.authorizeHttpRequests(authorize -> authorize
+				.anyRequest().authenticated()
+			)
+			.csrf(csrf -> csrf.disable())
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			//.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
+			//.formLogin(formLogin -> formLogin.disable())
+			.build();
+	}
+
+
 }
 
-@Order(2)
-@Bean
-public SecurityFilterChain protectedApiSecurityFilterChain(HttpSecurity http) throws Exception {
-    return http
-        .authorizeHttpRequests(authorize -> authorize
-            .anyRequest().authenticated()
-        )
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
-        .formLogin(formLogin -> formLogin.disable())
-        .build();
-}
-	
-	@Bean
+	/*  @Autowired
+	private CustomUserDetailsService customUserDetailsService; */
+	/* @Bean
 	public AuthenticationManager authenticationManager(HttpSecurity http, BCryptPasswordEncoder bCryptPasswordEncoder) throws Exception {
 		AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
 		authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(bCryptPasswordEncoder);
 		return authenticationManagerBuilder.build();
-	}
+	} */
 
 
 
-}
+

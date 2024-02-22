@@ -1,5 +1,5 @@
 package com.ocp3.rental.model;
-import java.util.Date;
+
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
