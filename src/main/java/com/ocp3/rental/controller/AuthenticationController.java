@@ -44,6 +44,7 @@ public class AuthenticationController {
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
+        System.out.println("Username: " + authentication.getName());
         final String token = jwtservice.generateToken(authentication);
         Map<String, String> tokenMap = new HashMap<String, String>();
         tokenMap.put("token", token);
