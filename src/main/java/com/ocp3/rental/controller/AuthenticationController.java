@@ -1,5 +1,8 @@
 package com.ocp3.rental.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ocp3.rental.configuration.CustomUserDetailsService;
-import com.ocp3.rental.model.AuthenticationResponse;
+
 import com.ocp3.rental.model.LoginRequest;
 import com.ocp3.rental.service.JWTService;
 
@@ -40,9 +43,10 @@ public class AuthenticationController {
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
-        final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        final String jwt = jwtservice.generateToken(authentication);
-
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
+        final String token = jwtservice.generateToken(authentication);
+        Map<String, String> tokenMap = new HashMap<String, String>();
+        tokenMap.put("token", token);
+        return ResponseEntity.ok(tokenMap);
     }
 }
