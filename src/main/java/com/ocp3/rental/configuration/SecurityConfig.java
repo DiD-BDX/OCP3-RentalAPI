@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -40,7 +41,12 @@ public class SecurityConfig {
 		SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length,"RSA");
 		return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
 	}
-	
+
+	@Bean
+    public PasswordEncoder rentalPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    } 
+
     @Autowired
 	private CustomUserDetailsService customUserDetailsService;
 @Order(1)
@@ -48,7 +54,7 @@ public class SecurityConfig {
 public SecurityFilterChain publicApiSecurityFilterChain(HttpSecurity http) throws Exception {
     return http
         .authorizeHttpRequests(authorize -> authorize
-            .requestMatchers("/api/auth/login").permitAll()
+            .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
         )
         .csrf(csrf -> csrf.disable())
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -77,10 +83,6 @@ public SecurityFilterChain protectedApiSecurityFilterChain(HttpSecurity http) th
 		return authenticationManagerBuilder.build();
 	}
 
-	@Bean
-	public BCryptPasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 
 
 }
