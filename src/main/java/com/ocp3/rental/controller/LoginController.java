@@ -23,7 +23,9 @@ import com.ocp3.rental.service.JWTService;
 public class LoginController {
     @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
     private  AuthenticationManager authManager;
+    @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
     private  UserDetailsService userDetailsService;
+    @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
     private  JWTService jwtService;
 
     @PostMapping("/api/auth/login") // Mappe cette méthode à l'URL "/api/auth/login" pour les requêtes POST
