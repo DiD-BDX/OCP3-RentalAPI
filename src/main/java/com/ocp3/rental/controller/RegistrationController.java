@@ -19,11 +19,11 @@ import com.ocp3.rental.repository.DBUserRepository;
 public class RegistrationController {
 
     private final DBUserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder rentalPasswordEncoder;
 
     public RegistrationController(DBUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.rentalPasswordEncoder = passwordEncoder;
     }
 
     @PostMapping("/api/auth/register")
@@ -32,7 +32,7 @@ public class RegistrationController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(rentalPasswordEncoder.encode(user.getPassword()));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
         String currentDate = sdf.format(new Date());
         user.setCreated_at(currentDate);
