@@ -18,21 +18,27 @@ import com.ocp3.rental.repository.DBUserRepository;
 // pour l'authentification avec Spring Security. Elle attribue également une autorité de base "ROLE_USER" à tous 
 // les utilisateurs.
 
-@Service
+@Service // Indique que cette classe est un service Spring
 public class CustomUserDetailsService implements UserDetailsService {
-	@Autowired
-	private DBUserRepository dbUserRepository;
+    @Autowired // Injection de dépendances pour DBUserRepository
+    private DBUserRepository dbUserRepository;
 
-	@Override
-	public UserDetails loadUserByUsername(String useremail) throws UsernameNotFoundException {
-		USERS userByEmail = dbUserRepository.findByEmail(useremail);
-		
-		return new User(userByEmail.getEmail(), userByEmail.getPassword(), getGrantedAuthorities());
-	}
+    @Override // Surcharge de la méthode loadUserByUsername de l'interface UserDetailsService
+    public UserDetails loadUserByUsername(String useremail) throws UsernameNotFoundException {
+        // Recherche un utilisateur par son email dans la base de données
+        USERS userByEmail = dbUserRepository.findByEmail(useremail);
+        
+        // Retourne un nouvel objet User (implémentation de UserDetails) avec l'email, le mot de passe et les autorités de l'utilisateur
+        return new User(userByEmail.getEmail(), userByEmail.getPassword(), getGrantedAuthorities());
+    }
 
-	private List<GrantedAuthority> getGrantedAuthorities() {
-		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-		return authorities;
-	}
+    // Méthode privée pour obtenir les autorités accordées à l'utilisateur
+    private List<GrantedAuthority> getGrantedAuthorities() {
+        // Crée une nouvelle liste d'autorités
+        List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        // Ajoute l'autorité "ROLE_USER" à la liste
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        // Retourne la liste d'autorités
+        return authorities;
+    }
 }

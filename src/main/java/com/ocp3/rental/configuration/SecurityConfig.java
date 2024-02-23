@@ -24,48 +24,65 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.ocp3.rental.service.JwtAuthenticationTokenFilter;
 
-
-
-@Configuration
-@EnableWebSecurity
+@Configuration // Indique que cette classe est une configuration Spring
+@EnableWebSecurity // Active la sécurité web avec Spring Security
 public class SecurityConfig {
 
-    @Autowired
-	private CustomUserDetailsService customUserDetailsService;
+    @Autowired // Injection de dépendances pour CustomUserDetailsService
+    private CustomUserDetailsService customUserDetailsService;
 
-	private String jwtKey = "e9756f6c99c81539de979a1d3ae1446f6118e5d8cbb6993b0080bbfbf6b6597b";
+    private String jwtKey = "e9756f6c99c81539de979a1d3ae1446f6118e5d8cbb6993b0080bbfbf6b6597b"; // Clé secrète pour les tokens JWT
 
-	@Bean
-	public JwtEncoder jwtEncoderApi() {
-		return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
-	}
-	@Bean
-	public JwtDecoder jwtDecoderApi() {
-		SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length,"RSA");
-		return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
-	}
-    @Bean
+    @Bean // Crée un bean pour l'encodeur JWT
+    public JwtEncoder jwtEncoderApi() {
+        // Utilise NimbusJwtEncoder avec la clé secrète pour encoder les tokens JWT
+        return new NimbusJwtEncoder(new ImmutableSecret<>(this.jwtKey.getBytes()));
+    }
+
+    @Bean // Crée un bean pour le décodeur JWT
+    public JwtDecoder jwtDecoderApi() {
+        // Crée une clé secrète spécifique pour le décodeur JWT
+        SecretKeySpec secretKey = new SecretKeySpec(this.jwtKey.getBytes(), 0, this.jwtKey.getBytes().length,"RSA");
+        // Utilise NimbusJwtDecoder avec la clé secrète et l'algorithme HS256 pour décoder les tokens JWT
+        return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS256).build();
+    }
+
+    @Bean // Crée un bean pour l'encodeur de mots de passe
     public PasswordEncoder PasswordEncoderApi() {
+        // Utilise BCryptPasswordEncoder pour encoder les mots de passe
         return new BCryptPasswordEncoder();
     }
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder PasswordEncoderApi) throws Exception {
-		AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-		authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(PasswordEncoderApi);
-		return authenticationManagerBuilder.build();
-	} 
 
-    @Bean
+    @Bean // Crée un bean pour le gestionnaire d'authentification
+    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder PasswordEncoderApi) throws Exception {
+        // Obtient le constructeur du gestionnaire d'authentification
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        // Configure le gestionnaire d'authentification pour utiliser CustomUserDetailsService et l'encodeur de mots de passe
+        authenticationManagerBuilder.userDetailsService(customUserDetailsService).passwordEncoder(PasswordEncoderApi);
+        // Construit et retourne le gestionnaire d'authentification
+        return authenticationManagerBuilder.build();
+    } 
+
+    @Bean // Crée un bean pour la chaîne de filtres de sécurité
     public SecurityFilterChain ApiSecurityFilterChain(HttpSecurity http, JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter) throws Exception {
+        // Configure la sécurité HTTP
         return http
+            // Autorise certaines requêtes en fonction de leur chemin
             .authorizeHttpRequests(authorize -> authorize
+                // Autorise toutes les requêtes vers "/api/auth/login" et "/api/auth/register"
                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                // Nécessite une authentification pour toutes les autres requêtes vers "/api/auth/**"
                 .requestMatchers("/api/auth/**").authenticated()
             )
+            // Désactive la protection CSRF
             .csrf(csrf -> csrf.disable())
+            // Configure la gestion de session pour être sans état
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Ajoute JwtAuthenticationTokenFilter avant UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+            // Configure le login par formulaire avec les paramètres par défaut
             .formLogin(Customizer.withDefaults())
+            // Construit et retourne la chaîne de filtres de sécurité
             .build();
     }
 }

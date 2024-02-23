@@ -19,34 +19,37 @@ import com.ocp3.rental.model.LoginRequest;
 import com.ocp3.rental.service.JWTService;
 
 
-@RestController
+@RestController // Indique que cette classe est un contrôleur REST
 public class LoginController {
-    @Autowired
+    @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
     private  AuthenticationManager authManager;
-    @Autowired
     private  UserDetailsService userDetailsService;
-    @Autowired
     private  JWTService jwtService;
 
-    
-	
-	@PostMapping("/api/auth/login")
-	public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest loginRequest) throws Exception {
+    @PostMapping("/api/auth/login") // Mappe cette méthode à l'URL "/api/auth/login" pour les requêtes POST
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest loginRequest) throws Exception {
         try {
+            // Tente d'authentifier l'utilisateur avec l'email et le mot de passe fournis
             authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
+            // Si l'authentification échoue, lance une exception avec un message d'erreur
             throw new Exception("Incorrect username or password", e);
         }
 
+        // Charge les détails de l'utilisateur à partir de l'email fourni
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        // Crée un objet Authentication avec le nom d'utilisateur et aucun mot de passe
         final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
+        // Affiche le nom d'utilisateur dans la console
         System.out.println("Username: " + authentication.getName());
+        // Génère un token JWT à partir de l'objet Authentication
         final String token = jwtService.generateToken(authentication);
+        // Crée une map avec le token JWT
         Map<String, String> tokenMap = new HashMap<String, String>();
         tokenMap.put("token", token);
+        // Renvoie une réponse avec la map du token JWT
         return ResponseEntity.ok(tokenMap);
     }
-	
 }
