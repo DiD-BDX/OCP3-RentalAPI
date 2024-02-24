@@ -30,8 +30,10 @@ public class RegistrationController {
     @PostMapping("/api/auth/register") // Mappe cette méthode à l'URL "/api/auth/register" pour les requêtes POST
     public ResponseEntity<?> register(@RequestBody USERS user) { // Prend en paramètre un objet USERS qui est automatiquement converti à partir du corps de la requête HTTP
         // Vérifie si un utilisateur avec le même email existe déjà
-        if (userRepository.findByEmail(user.getEmail()) != null) {
-            // Si c'est le cas, renvoie une réponse avec le statut HTTP 400 (Bad Request)
+        if (user.getEmail() == null || user.getEmail().isEmpty() || 
+            user.getPassword() == null || user.getPassword().isEmpty() || 
+            user.getName() == null || user.getName().isEmpty()) {
+            // Si c'est le cas, renvoie une réponse avec le statut HTTP 400 (Bad Request) et un corps vide
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 

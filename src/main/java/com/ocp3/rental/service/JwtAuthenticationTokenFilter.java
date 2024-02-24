@@ -55,6 +55,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
+        } else if (request.getMethod().equals("GET") && request.getRequestURI().equals("/api/auth/me")) {
+            // Si la condition if n'est pas remplie, mais que la requête est une requête GET sur /api/auth/me,
+            // renvoie une réponse HTTP 401 avec un corps JSON vide
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{}");
+            return;
         }
 
         // Passe la requête et la réponse au prochain filtre dans la chaîne
