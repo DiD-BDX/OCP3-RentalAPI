@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import com.ocp3.rental.model.LoginRequest;
+import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.service.JWTService;
 
 
@@ -30,11 +30,11 @@ public class LoginController {
     private  JWTService jwtService;
 
     @PostMapping("/api/auth/login") // Mappe cette méthode à l'URL "/api/auth/login" pour les requêtes POST
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest loginRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody USERS users) throws Exception {
         try {
             // Tente d'authentifier l'utilisateur avec l'email et le mot de passe fournis
             authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(users.getEmail(), users.getPassword())
             );
         } catch (AuthenticationException e) {
             // Si l'authentification échoue, crée une map avec un message d'erreur
@@ -46,7 +46,7 @@ public class LoginController {
         }
 
         // Charge les détails de l'utilisateur à partir de l'email fourni
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(users.getEmail());
         // Crée un objet Authentication avec le nom d'utilisateur et aucun mot de passe
         final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
         // Génère un token JWT à partir de l'objet Authentication

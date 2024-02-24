@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import com.ocp3.rental.model.USERS;
-import com.ocp3.rental.repository.DBUserRepository;
+import com.ocp3.rental.repository.DBocp3Repository;
 
 
 // Cette classe fournit un moyen de charger les détails d'un utilisateur à partir de la base de données
@@ -21,12 +21,12 @@ import com.ocp3.rental.repository.DBUserRepository;
 @Service // Indique que cette classe est un service Spring
 public class CustomUserDetailsService implements UserDetailsService {
     @Autowired // Injection de dépendances pour DBUserRepository
-    private DBUserRepository dbUserRepository;
+    private DBocp3Repository dbocp3Repository;
 
     @Override // Surcharge de la méthode loadUserByUsername de l'interface UserDetailsService
     public UserDetails loadUserByUsername(String useremail) throws UsernameNotFoundException {
         // Recherche un utilisateur par son email dans la base de données
-        USERS userByEmail = dbUserRepository.findByEmail(useremail);
+        USERS userByEmail = dbocp3Repository.findByEmail(useremail);
         
         // Retourne un nouvel objet User (implémentation de UserDetails) avec l'email, le mot de passe et les autorités de l'utilisateur
         return new User(userByEmail.getEmail(), userByEmail.getPassword(), getGrantedAuthorities());

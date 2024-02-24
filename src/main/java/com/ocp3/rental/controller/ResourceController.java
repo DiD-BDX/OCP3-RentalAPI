@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ocp3.rental.model.USERS;
-import com.ocp3.rental.repository.DBUserRepository;
+import com.ocp3.rental.repository.DBocp3Repository;
 import com.ocp3.rental.service.JWTService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/auth")
 public class ResourceController {
     @Autowired
-    private DBUserRepository userRepository;
+    private DBocp3Repository dbocp3Repository;
 
     @Autowired
     private JWTService jwtService;
@@ -28,14 +28,14 @@ public class ResourceController {
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
         // Récupère l'utilisateur à partir de la requête
-        USERS user = getUserFromRequest(request);
+        USERS users = getUserFromRequest(request);
 
         // Crée une map avec les informations de l'utilisateur
         Map<String, Object> userData = new LinkedHashMap<>();
-        userData.put("name", user.getName());
-        userData.put("email", user.getEmail());
-        userData.put("created_at", user.getCreated_at());
-        userData.put("updated_at", user.getUpdated_at());
+        userData.put("name", users.getName());
+        userData.put("email", users.getEmail());
+        userData.put("created_at", users.getCreated_at());
+        userData.put("updated_at", users.getUpdated_at());
 
         // Retourne les informations de l'utilisateur sous format JSON
         return ResponseEntity.ok(userData);
@@ -47,6 +47,6 @@ public class ResourceController {
         // Récupère l'email de l'utilisateur à partir du token
         String email = jwtService.getUserEmailFromToken(token);
         // Récupère l'utilisateur à partir de l'email
-        return userRepository.findByEmail(email);
+        return dbocp3Repository.findByEmail(email);
     }
 }
