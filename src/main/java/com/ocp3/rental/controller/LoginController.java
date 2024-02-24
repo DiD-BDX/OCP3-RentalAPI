@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,17 +36,19 @@ public class LoginController {
             authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
             );
-        } catch (BadCredentialsException e) {
-            // Si l'authentification échoue, lance une exception avec un message d'erreur
-            throw new Exception("Incorrect username or password", e);
+        } catch (AuthenticationException e) {
+            // Si l'authentification échoue, crée une map avec un message d'erreur
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put( "message: ","error");
+
+            // Retourne la map sous format JSON avec un statut HTTP 401 (Non autorisé)
+            return new ResponseEntity<>(responseBody, HttpStatus.UNAUTHORIZED);
         }
 
         // Charge les détails de l'utilisateur à partir de l'email fourni
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
         // Crée un objet Authentication avec le nom d'utilisateur et aucun mot de passe
         final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
-        // Affiche le nom d'utilisateur dans la console
-        System.out.println("Username: " + authentication.getName());
         // Génère un token JWT à partir de l'objet Authentication
         final String token = jwtService.generateToken(authentication);
         // Crée une map avec le token JWT
