@@ -19,7 +19,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.ocp3.rental.service.JwtAuthenticationTokenFilter;
@@ -67,21 +67,20 @@ public class SecurityConfig {
     public SecurityFilterChain ApiSecurityFilterChain(HttpSecurity http, JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter) throws Exception {
         // Configure la sécurité HTTP
         return http
-            // Autorise certaines requêtes en fonction de leur chemin
-            .authorizeHttpRequests(authorize -> authorize
-                // Autorise toutes les requêtes vers "/api/auth/login" et "/api/auth/register"
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                // Nécessite une authentification pour toutes les autres requêtes vers "/api/auth/**"
-                .requestMatchers("/api/auth/**").authenticated()
-            )
             // Désactive la protection CSRF
             .csrf(csrf -> csrf.disable())
             // Configure la gestion de session pour être sans état
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Autorise certaines requêtes en fonction de leur chemin
+            .authorizeHttpRequests(authorize -> authorize
+                // Autorise toutes les requêtes vers "/api/auth/login" et "/api/auth/register"
+                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                // Nécessite une authentification pour toutes les autres requêtes
+                .anyRequest().authenticated()
+            )
             // Ajoute JwtAuthenticationTokenFilter avant UsernamePasswordAuthenticationFilter
-            .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
-            // Configure le login par formulaire avec les paramètres par défaut
-            .formLogin(Customizer.withDefaults())
+            .addFilterBefore(jwtAuthenticationTokenFilter, BasicAuthenticationFilter.class)
+            .httpBasic(Customizer.withDefaults())
             // Construit et retourne la chaîne de filtres de sécurité
             .build();
     }

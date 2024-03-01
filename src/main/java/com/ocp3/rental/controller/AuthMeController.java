@@ -6,10 +6,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ocp3.rental.model.USERS;
+
 import com.ocp3.rental.repository.DBocp3Repository;
 import com.ocp3.rental.service.JWTService;
 
@@ -17,15 +17,15 @@ import jakarta.servlet.http.HttpServletRequest;
 
 
 @RestController
-@RequestMapping("/api/auth")
-public class ResourceController {
+public class AuthMeController {
     @Autowired
     private DBocp3Repository dbocp3Repository;
+
 
     @Autowired
     private JWTService jwtService;
 
-    @GetMapping("/me")
+    @GetMapping("/api/auth/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
         // Récupère l'utilisateur à partir de la requête
         USERS users = getUserFromRequest(request);
@@ -40,7 +40,7 @@ public class ResourceController {
         // Retourne les informations de l'utilisateur sous format JSON
         return ResponseEntity.ok(userData);
     }
-
+    
     private USERS getUserFromRequest(HttpServletRequest request) {
         // Récupère le token du header de la requête
         String token = request.getHeader("Authorization").substring(7); // Supprime "Bearer "

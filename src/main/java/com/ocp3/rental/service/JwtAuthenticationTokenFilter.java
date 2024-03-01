@@ -49,10 +49,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                     // Crée une authentification à partir des détails de l'utilisateur
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
+                    System.out.println("Authentication : " + authentication);
                     // Ajoute les détails de la requête à l'authentification
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     // Enregistre l'authentification dans le contexte de sécurité
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    System.out.println("SecurityContextHolder.getContext().getAuthentication() : " + SecurityContextHolder.getContext().getAuthentication());
                 }
             }
         } else if (request.getMethod().equals("GET") && request.getRequestURI().equals("/api/auth/me")) {

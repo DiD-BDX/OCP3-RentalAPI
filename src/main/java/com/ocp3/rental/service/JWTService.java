@@ -17,12 +17,19 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.stereotype.Service;
 
 import com.ocp3.rental.configuration.CustomUserDetailsService;
+import com.ocp3.rental.model.USERS;
+import com.ocp3.rental.repository.DBocp3Repository;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service // Indique que cette classe est un service Spring
 public class JWTService {
 
     @Autowired // Injection de dépendances pour CustomUserDetailsService
     private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private DBocp3Repository dbocp3Repository;
 
     private JwtEncoder jwtEncoderApi; // Pour encoder les JWT
     private JwtDecoder jwtDecoderApi; // Pour décoder les JWT
@@ -65,5 +72,14 @@ public class JWTService {
     System.out.println("Email de l'utilisateur : " + email); // Affiche l'email de l'utilisateur
     // Vérifie si la revendication "sub" est égale à l'email de l'utilisateur et si le token JWT n'a pas d'erreurs
     return jwt.getClaimAsString("sub").equals(email) && !JwtValidators.createDefault().validate(jwt).hasErrors();
+    }
+
+    public USERS getUserFromRequest(HttpServletRequest request) {
+        // Récupère le token du header de la requête
+        String token = request.getHeader("Authorization").substring(7); // Supprime "Bearer "
+        // Récupère l'email de l'utilisateur à partir du token
+        String email = getUserEmailFromToken(token);
+        // Récupère l'utilisateur à partir de l'email
+        return dbocp3Repository.findByEmail(email);
     }
 }
