@@ -1,6 +1,9 @@
 package com.ocp3.rental.model;
 
 
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,10 +15,21 @@ import lombok.Data;
 public class USERS {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id")
 	private Integer id;
+
+	@Column(name = "email")
 	private String email;
+
+	@Column(name = "password")
 	private String password;
-	private String name;  
-	private String created_at;
-	private String updated_at;
+
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "created_at")
+	private LocalDate createdAt;
+
+	@Column(name = "updated_at")
+	private LocalDate updatedAt;
 }

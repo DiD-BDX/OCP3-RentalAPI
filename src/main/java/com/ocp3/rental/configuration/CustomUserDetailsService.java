@@ -2,6 +2,8 @@ package com.ocp3.rental.configuration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,10 +28,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override // Surcharge de la méthode loadUserByUsername de l'interface UserDetailsService
     public UserDetails loadUserByUsername(String useremail) throws UsernameNotFoundException {
         // Recherche un utilisateur par son email dans la base de données
-        USERS userByEmail = dbocp3Repository.findByEmail(useremail);
-        
-        // Retourne un nouvel objet User (implémentation de UserDetails) avec l'email, le mot de passe et les autorités de l'utilisateur
-        return new User(userByEmail.getEmail(), userByEmail.getPassword(), getGrantedAuthorities());
+        Optional<USERS> userByEmail = dbocp3Repository.findByEmail(useremail);
+        if (userByEmail.isPresent()) {
+            USERS user = userByEmail.get();
+            return new User(user.getEmail(), user.getPassword(), getGrantedAuthorities());
+        } else {
+            throw new UsernameNotFoundException("User not found with email: " + useremail);
+        }
     }
 
     // Méthode privée pour obtenir les autorités accordées à l'utilisateur

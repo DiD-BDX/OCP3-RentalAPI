@@ -2,6 +2,7 @@ package com.ocp3.rental.controller;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,25 +29,28 @@ public class AuthMeController {
     @GetMapping("/api/auth/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
         // Récupère l'utilisateur à partir de la requête
-        USERS users = getUserFromRequest(request);
-
-        // Crée une map avec les informations de l'utilisateur
-        Map<String, Object> userData = new LinkedHashMap<>();
-        userData.put("name", users.getName());
-        userData.put("email", users.getEmail());
-        userData.put("created_at", users.getCreated_at());
-        userData.put("updated_at", users.getUpdated_at());
-
-        // Retourne les informations de l'utilisateur sous format JSON
-        return ResponseEntity.ok(userData);
-    }
-    
-    private USERS getUserFromRequest(HttpServletRequest request) {
         // Récupère le token du header de la requête
         String token = request.getHeader("Authorization").substring(7); // Supprime "Bearer "
         // Récupère l'email de l'utilisateur à partir du token
         String email = jwtService.getUserEmailFromToken(token);
         // Récupère l'utilisateur à partir de l'email
-        return dbocp3Repository.findByEmail(email);
+        Optional<USERS> existingUsers = dbocp3Repository.findByEmail(email);
+
+        // Crée une map avec les informations de l'utilisateur
+        Map<String, Object> userData = new LinkedHashMap<>();
+
+        if (existingUsers.isPresent()) {
+            USERS user = existingUsers.get();
+            
+            userData.put("name", user.getName());
+            userData.put("email", user.getEmail());
+            userData.put("created_at", user.getCreatedAt());
+            userData.put("updated_at", user.getUpdatedAt());   
+        } else {
+            
+        }
+        // Retourne les informations de l'utilisateur sous format JSON
+        return ResponseEntity.ok(userData);
     }
+    
 }

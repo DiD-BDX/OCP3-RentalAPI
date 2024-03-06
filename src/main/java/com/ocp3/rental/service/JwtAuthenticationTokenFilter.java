@@ -31,7 +31,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {       
         // Récupère le header "Authorization" de la requête
         String authHeader = request.getHeader("Authorization");
-
+        
         // Vérifie si le header "Authorization" existe et commence par "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             // Récupère le token JWT du header "Authorization"
@@ -65,6 +65,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             response.getWriter().write("{}");
             return;
         }
+         // Vérifie si le header Authorization est différent de Bearer jwt
+         String authorizationHeader = request.getHeader("Authorization");
+         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer")) {
+             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+             return;
+         }
 
         // Passe la requête et la réponse au prochain filtre dans la chaîne
         chain.doFilter(request, response);

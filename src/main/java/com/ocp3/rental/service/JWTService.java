@@ -2,6 +2,7 @@ package com.ocp3.rental.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -80,6 +81,7 @@ public class JWTService {
         // Récupère l'email de l'utilisateur à partir du token
         String email = getUserEmailFromToken(token);
         // Récupère l'utilisateur à partir de l'email
-        return dbocp3Repository.findByEmail(email);
+        Optional<USERS> existingUser = dbocp3Repository.findByEmail(email);
+        return existingUser.get();
     }
 }
