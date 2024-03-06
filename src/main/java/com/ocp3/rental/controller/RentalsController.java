@@ -87,6 +87,7 @@ public class RentalsController {
     @GetMapping({"/api/rentals/{id}", "/api/rentals/{id}/"})
     public ResponseEntity<RENTALS> getRental(@PathVariable Integer id) {
     RENTALS rental = dbRentalsRepository.findById(id).get();
+    System.out.println("Returning rental..." + rental);
     return ResponseEntity.ok(rental);
     }
     

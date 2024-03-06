@@ -3,6 +3,8 @@ package com.ocp3.rental.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,8 +39,10 @@ public class RENTALS {
     private Integer ownerId;
 	
 	@Column(name = "created_at")
+	@JsonProperty("created_at")
 	private LocalDate createdAt;
 
 	@Column(name = "updated_at")
+	@JsonProperty("updated_at")
 	private LocalDate updatedAt;
 }
