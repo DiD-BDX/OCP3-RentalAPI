@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UsersDataTransferObject {
+    private Integer id;
     private String email;
     private String password;
     private String name;

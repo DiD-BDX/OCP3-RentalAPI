@@ -11,12 +11,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RentalsDataTransferObject {
+    private Integer id;
     private String name;
     private BigDecimal surface;
     private BigDecimal price;
     private String picture;
     private String description;
-    private Integer owner_id;
+    private Integer ownerId;
     private LocalDate created_at;
     private LocalDate updated_at;
 

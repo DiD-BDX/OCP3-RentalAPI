@@ -66,6 +66,12 @@ public class JWTService {
         return jwt.getClaimAsString("sub"); // Retourne la revendication "sub" (l'email de l'utilisateur) en tant que chaîne
     }
 
+    public Integer getUserIdFromToken(String token) {
+        String email = getUserEmailFromToken(token); // Obtient l'email de l'utilisateur à partir du token
+        Optional<USERS> existingUser = dbocp3Repository.findByEmail(email); // Récupère l'utilisateur à partir de l'email
+        return existingUser.get().getId(); // Retourne l'ID de l'utilisateur
+    }
+
     // Valide le token JWT
     public boolean validateToken(String token, UserDetails userDetails) {
     Jwt jwt = jwtDecoderApi.decode(token); // Décode le token JWT
