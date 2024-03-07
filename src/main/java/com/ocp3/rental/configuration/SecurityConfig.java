@@ -3,6 +3,7 @@ package com.ocp3.rental.configuration;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -73,9 +74,15 @@ public class SecurityConfig {
             // Autorise certaines requêtes en fonction de leur chemin
             .authorizeHttpRequests(authorize -> authorize
                 // Autorise toutes les requêtes vers "/api/auth/login" et "/api/auth/register"
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                //.requestMatchers("/v3/**").permitAll()
+                //.requestMatchers("/swagger-ui**").permitAll()
                 // Nécessite une authentification pour toutes les autres requêtes
-                .anyRequest().authenticated()
+                //.anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
             // Ajoute JwtAuthenticationTokenFilter avant UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationTokenFilter, BasicAuthenticationFilter.class)

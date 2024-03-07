@@ -20,6 +20,7 @@ import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.service.JWTService;
 
 
+
 @RestController // Indique que cette classe est un contrôleur REST
 public class LoginController {
     @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService

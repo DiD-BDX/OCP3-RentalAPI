@@ -3,6 +3,7 @@ package com.ocp3.rental.service;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -79,7 +80,14 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     // Cette méthode détermine si le filtre doit être appliqué ou non à la requête
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        // Le filtre ne doit pas être appliqué si la requête est pour "/api/auth/login" ou "/api/auth/register"
-        return request.getServletPath().equals("/api/auth/login") || request.getServletPath().equals("/api/auth/register");
+    String path = request.getServletPath();
+    System.out.println("Actual path : " + path);
+    boolean shouldNotFilter = path.equals("/api/auth/login")
+        || path.equals("/api/auth/register")
+        || path.startsWith("/swagger-ui")
+        || path.startsWith("/v3/")
+        || PathRequest.toStaticResources().atCommonLocations().matches(request);
+    System.out.println("Should not filter: " + shouldNotFilter);
+    return shouldNotFilter;
     }
 }
