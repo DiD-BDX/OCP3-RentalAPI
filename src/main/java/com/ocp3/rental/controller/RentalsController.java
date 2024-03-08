@@ -1,17 +1,26 @@
 package com.ocp3.rental.controller;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ocp3.rental.DTO.RentalsDataTransferObject;
 import com.ocp3.rental.model.RENTALS;
 import com.ocp3.rental.model.USERS;
@@ -30,6 +39,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping()
 public class RentalsController {
+    String basePicturePath = "http://localhost:3001/images/";
 
     @Autowired
     private DBRentalsRepository dbRentalsRepository;
@@ -38,44 +48,43 @@ public class RentalsController {
     private JWTService jwtService;
 
     @PostMapping({"/api/rentals", "/api/rentals/**"})
-    public ResponseEntity<?> rentals(HttpServletRequest request, @ModelAttribute RentalsDataTransferObject rentalsDto) throws IOException {
+    public ResponseEntity<?> rentals(HttpServletRequest request,
+        @ModelAttribute RentalsDataTransferObject rentalsDto,
+        @RequestParam("picture") MultipartFile image) throws IOException {
 
-    // Récupère l'utilisateur authentifié à partir de la requête
+        // Récupère l'utilisateur authentifié à partir de la requête
         USERS users = jwtService.getUserFromRequest(request);
         String authenticatedUser = users.getName();
         System.out.println("Authenticated user: " + authenticatedUser);
         Integer authenticatedUserId = users.getId();
         System.out.println("ID authenticated: " + authenticatedUserId);
-    
-    // valeurs de rentals dans la console
-    System.out.println("Name: " + rentalsDto.getName());
-    System.out.println("Surface: " + rentalsDto.getSurface());
-    System.out.println("Price: " + rentalsDto.getPrice());
-    System.out.println("Picture: " + rentalsDto.getPicture());
-    System.out.println("Owner ID: " + rentalsDto.getOwnerId());
-    System.out.println("Description: " + rentalsDto.getDescription());
+
+        // Enregistre l'image et récupère le chemin du fichier
+        String pictureName = savePictureFromRequest(image, request);
+        System.out.println("Picture name: " + pictureName);
         
-    // Crée un nouvel objet RENTALS à partir du DTO
-    RENTALS rentals = new RENTALS();
+        // Crée un nouvel objet RENTALS à partir du DTO
+        RENTALS rentals = new RENTALS();
+        rentalsDto.setPictureUrl(basePicturePath + pictureName);
 
-    rentals.setName(rentalsDto.getName());
-    rentals.setSurface(rentalsDto.getSurface());
-    rentals.setPrice(rentalsDto.getPrice());
-    rentals.setPicture(rentalsDto.getPicture());
-    rentals.setOwnerId(authenticatedUserId);
-    rentals.setDescription(rentalsDto.getDescription());
-    rentals.setCreatedAt(LocalDate.now());
-    rentals.setUpdatedAt(LocalDate.now());
+        rentals.setName(rentalsDto.getName());
+        rentals.setSurface(rentalsDto.getSurface());
+        rentals.setPrice(rentalsDto.getPrice());
+        rentals.setPicture(rentalsDto.getPictureUrl());
+        rentals.setOwnerId(authenticatedUserId);
+        rentals.setDescription(rentalsDto.getDescription());
+        rentals.setCreatedAt(LocalDate.now());
+        rentals.setUpdatedAt(LocalDate.now());
 
-    // Sauvegarde l'objet RENTALS dans la base de données
-    dbRentalsRepository.save(rentals);
+        // Sauvegarde l'objet RENTALS dans la base de données
+        dbRentalsRepository.save(rentals);
 
-    // Crée une map avec le message de succès
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Rental created !");
+        // Crée une map avec le message de succès
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Rental created !");
 
-    System.out.println("Returning response...");
-    return ResponseEntity.ok(response);
+        System.out.println("Returning response...");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping({"/api/rentals", "/api/rentals/"})
@@ -86,7 +95,6 @@ public class RentalsController {
     String token = request.getHeader("Authorization").substring(7);
     Integer authenticatedUserId = jwtService.getUserIdFromToken(token);
     System.out.println("Authenticated user ID: " + authenticatedUserId);
-    
 
     List<Map<String, Object>> rentalsDtoList = new ArrayList<>();
 
@@ -99,7 +107,7 @@ public class RentalsController {
         rentalsDto.setName(rental.getName());
         rentalsDto.setSurface(rental.getSurface());
         rentalsDto.setPrice(rental.getPrice());
-        rentalsDto.setPicture(rental.getPicture());
+        rentalsDto.setPictureUrl(rental.getPicture());
         rentalsDto.setDescription(rental.getDescription());
         rentalsDto.setOwnerId(rental.getOwnerId());
         rentalsDto.setCreated_at(rental.getCreatedAt());
@@ -110,7 +118,7 @@ public class RentalsController {
         rentalMap.put("name", rentalsDto.getName());
         rentalMap.put("surface", rentalsDto.getSurface());
         rentalMap.put("price", rentalsDto.getPrice());
-        rentalMap.put("picture", rentalsDto.getPicture());
+        rentalMap.put("picture", rentalsDto.getPictureUrl());
         rentalMap.put("description", rentalsDto.getDescription());
         if (authenticatedUserId.equals(rentalOwner)) {
             rentalMap.put("ownerId", rentalsDto.getOwnerId());
@@ -130,45 +138,27 @@ public class RentalsController {
     return ResponseEntity.ok(response);
 }
 
-   /*  @GetMapping({"/api/rentals/{id}", "/api/rentals/{id}/"})
-    public ResponseEntity<Map<String, Object>> getRental(@PathVariable Integer id) {
-    RENTALS rental = dbRentalsRepository.findById(id).get();
-
-    Map<String, Object> response = new HashMap<>();
-    response.put("id", rental.getId());
-    response.put("name", rental.getName());
-    response.put("surface", rental.getSurface());
-    response.put("price", rental.getPrice());
-    response.put("picture", rental.getPicture());
-    response.put("description", rental.getDescription());
-    response.put("ownerId", rental.getOwnerId());
-    response.put("created_at", rental.getCreatedAt());
-    response.put("updated_at", rental.getUpdatedAt());
-
-    System.out.println("Returning rental..." + response);
-
-    return ResponseEntity.ok(response);
-    } */
-
     @GetMapping({"/api/rentals/{id}", "/api/rentals/{id}/"})
-public ResponseEntity<RentalsDataTransferObject> getRental(@PathVariable Integer id) {
-    RENTALS rental = dbRentalsRepository.findById(id).get();
+    public ResponseEntity<ObjectNode> getRental(@PathVariable Integer id) {
+        RENTALS rental = dbRentalsRepository.findById(id).get();
 
-    RentalsDataTransferObject rentalsDto = new RentalsDataTransferObject();
-    rentalsDto.setId(rental.getId());
-    rentalsDto.setName(rental.getName());
-    rentalsDto.setSurface(rental.getSurface());
-    rentalsDto.setPrice(rental.getPrice());
-    rentalsDto.setPicture(rental.getPicture());
-    rentalsDto.setDescription(rental.getDescription());
-    rentalsDto.setOwnerId(rental.getOwnerId());
-    rentalsDto.setCreated_at(rental.getCreatedAt());
-    rentalsDto.setUpdated_at(rental.getUpdatedAt());
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode rentalsDto = mapper.createObjectNode();
 
-    System.out.println("Returning rental..." + rentalsDto);
+        rentalsDto.put("id", rental.getId());
+        rentalsDto.put("name", rental.getName());
+        rentalsDto.put("surface", rental.getSurface());
+        rentalsDto.put("price", rental.getPrice());
+        rentalsDto.put("picture", rental.getPicture());
+        rentalsDto.put("description", rental.getDescription());
+        rentalsDto.put("owner_id", rental.getOwnerId());
+        rentalsDto.put("created_at", rental.getCreatedAt().toString());
+        rentalsDto.put("updated_at", rental.getUpdatedAt().toString());
 
-    return ResponseEntity.ok(rentalsDto);
-}
+        System.out.println("Returning rental..." + rentalsDto);
+
+        return ResponseEntity.ok(rentalsDto);
+    }
     
     @PutMapping("/api/rentals/{id}")
     public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
@@ -176,7 +166,7 @@ public ResponseEntity<RentalsDataTransferObject> getRental(@PathVariable Integer
     rental.setName(rentalsDto.getName());
     rental.setSurface(rentalsDto.getSurface());
     rental.setPrice(rentalsDto.getPrice());
-    // rental.setPicture(rentalsDto.getPicture());
+    rental.setPicture(rentalsDto.getPictureUrl());
     rental.setDescription(rentalsDto.getDescription());
     rental.setUpdatedAt(LocalDate.now());
     dbRentalsRepository.save(rental);
@@ -187,5 +177,32 @@ public ResponseEntity<RentalsDataTransferObject> getRental(@PathVariable Integer
 
     System.out.println("Returning response...");
     return ResponseEntity.ok(response);
+    }
+
+
+    private String savePictureFromRequest(MultipartFile image, HttpServletRequest request) throws IOException {
+        // Vérifiez si le fichier est vide
+        if (image.isEmpty()) {
+            throw new IllegalArgumentException("Cannot upload empty file");
+        }
+
+        // Générer le nom du fichier
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(image.getOriginalFilename()));
+
+        // Créer le chemin du fichier
+        Path uploadPath = Paths.get("src/main/resources/static/images/");
+
+        // Créer le répertoire s'il n'existe pas
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // Enregistrer le fichier
+        Path filePath = uploadPath.resolve(fileName);
+        System.out.println("------ File path: " + filePath);
+        image.transferTo(filePath);
+        
+
+        return fileName.toString();
     }
 }
