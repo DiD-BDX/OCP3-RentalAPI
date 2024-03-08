@@ -1,4 +1,4 @@
-package com.ocp3.rental.configuration;
+package com.ocp3.rental.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import com.ocp3.rental.DTO.UsersDataTransferObject;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBocp3Repository;
 
@@ -45,5 +47,16 @@ public class CustomUserDetailsService implements UserDetailsService {
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         // Retourne la liste d'autorités
         return authorities;
+    }
+
+
+    public USERS registerUser(UsersDataTransferObject usersDto) {
+        USERS users = new USERS();
+        users.setEmail(usersDto.getEmail());
+        users.setPassword(usersDto.getPassword());
+        users.setName(usersDto.getName());
+        users.setCreatedAt(usersDto.getCreated_at());
+        users.setUpdatedAt(usersDto.getUpdated_at());
+        return dbocp3Repository.save(users);
     }
 }

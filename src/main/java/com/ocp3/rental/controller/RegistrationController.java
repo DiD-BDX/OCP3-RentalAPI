@@ -24,28 +24,28 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ocp3.rental.DTO.UsersDataTransferObject;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBocp3Repository;
+import com.ocp3.rental.service.CustomUserDetailsService;
 import com.ocp3.rental.service.JWTService;
 
 @RestController // Indique que cette classe est un contrôleur REST
 public class RegistrationController {
 
     @Autowired
-    private DBocp3Repository dbocp3repository; // Référence vers le repository des utilisateurs
+    private CustomUserDetailsService customUserDetailsService; // Référence vers le service de gestion des utilisateurs
     @Autowired
-    private PasswordEncoder passwordEncoder; // Référence vers l'encodeur de mots de passe
+    private DBocp3Repository dbocp3repository; // Référence vers le repository des utilisateurs
     @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
     private  UserDetailsService userDetailsService;
     @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
     private  JWTService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
     @PostMapping("/api/auth/register") // Mappe cette méthode à l'URL "/api/auth/register" pour les requêtes POST
     public ResponseEntity<?> register(@RequestBody UsersDataTransferObject usersDto) { // Prend en paramètre un objet usersDto qui est automatiquement converti à partir du corps de la requête HTTP
         System.out.println("Starting register method...");
         System.out.println(usersDto);
-
-        // Crée une nouvelle entité USERS à partir de usersDto
-        USERS users = new USERS();
         
         // Vérifie si un utilisateur avec le même email existe déjà
         Optional<USERS> existingUser = dbocp3repository.findByEmail(usersDto.getEmail());
@@ -58,19 +58,14 @@ public class RegistrationController {
         usersDto.setCreated_at(LocalDate.now());
         usersDto.setUpdated_at(LocalDate.now());
         System.out.println("UserDto avant enr dans la DB: " + usersDto);
+        // encodage du password avant enregistrement dans la DB
+        usersDto.setPassword(passwordEncoder.encode(usersDto.getPassword()));
         
-        users.setEmail(usersDto.getEmail());
-        // Encode le mot de passe avant de l'enregistrer dans la base de données
-        users.setPassword(passwordEncoder.encode(usersDto.getPassword()));
-
-        users.setName(usersDto.getName());
-        users.setCreatedAt(usersDto.getCreated_at());
-        users.setUpdatedAt(usersDto.getUpdated_at());
-        // Enregistre l'utilisateur dans la base de données
-        dbocp3repository.save(users);
+        // Crée une nouvelle entité USERS et l'enregistre dans la base de données
+        customUserDetailsService.registerUser(usersDto);
 
         // Charge les détails de l'utilisateur à partir de l'email fourni
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(users.getEmail());
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(usersDto.getEmail());
         // Crée un objet Authentication avec le nom d'utilisateur et aucun mot de passe
         final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
         // Génère un token JWT à partir de l'objet Authentication

@@ -22,6 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.ocp3.rental.service.CustomUserDetailsService;
 import com.ocp3.rental.service.JwtAuthenticationTokenFilter;
 
 @Configuration // Indique que cette classe est une configuration Spring

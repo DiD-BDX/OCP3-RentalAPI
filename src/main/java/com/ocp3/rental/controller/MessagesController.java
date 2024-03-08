@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 
 @RestController
-@RequestMapping({"/api/messages/", "/api/messages"})
+@RequestMapping("/api/messages**")
 public class MessagesController {
 
     @Autowired
@@ -38,7 +38,6 @@ public class MessagesController {
 
     @PostMapping
     public ResponseEntity<?> messages(HttpServletRequest request, @RequestBody MessagesDataTransferObject messages) {
-    //public ResponseEntity<?> messages(@RequestBody MessagesDataTransferObject messages) {
         System.out.println("Starting register method...");
 
         // Vérifie si le header Authorization est différent de Bearer jwt
@@ -79,9 +78,9 @@ public class MessagesController {
 
         System.out.println("Returning response...");
         return ResponseEntity.ok(response);
-
-            
     }
+
+    
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleInvalidJson(HttpMessageNotReadableException ex) {
     HttpHeaders headers = new HttpHeaders();

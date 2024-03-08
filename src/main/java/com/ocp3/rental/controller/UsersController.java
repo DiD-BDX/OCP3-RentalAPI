@@ -17,7 +17,7 @@ public class UsersController {
     @Autowired
     private DBocp3Repository dbocp3Repository;
 
-    @GetMapping({"/api/user/{id}", "/api/user/{id}/"})
+    @GetMapping("/api/user/{id}**")
     public ResponseEntity<UsersDataTransferObject> getUserEntity(@PathVariable Integer id) {
         USERS userData = dbocp3Repository.findById(id).get();
         UsersDataTransferObject userDto = new UsersDataTransferObject();

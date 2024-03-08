@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.stereotype.Service;
 
-import com.ocp3.rental.configuration.CustomUserDetailsService;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBocp3Repository;
 

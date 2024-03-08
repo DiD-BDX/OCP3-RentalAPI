@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping()
 public class RentalsController {
-    String basePicturePath = "http://localhost:3001/images/";
+    @Value("${base.picture.path}")
+    private String basePicturePath;
 
     @Autowired
     private DBRentalsRepository dbRentalsRepository;
@@ -47,7 +49,7 @@ public class RentalsController {
     @Autowired
     private JWTService jwtService;
 
-    @PostMapping({"/api/rentals", "/api/rentals/**"})
+    @PostMapping("/api/rentals")
     public ResponseEntity<?> rentals(HttpServletRequest request,
         @ModelAttribute RentalsDataTransferObject rentalsDto,
         @RequestParam("picture") MultipartFile image) throws IOException {
@@ -87,7 +89,7 @@ public class RentalsController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping({"/api/rentals", "/api/rentals/"})
+    @GetMapping("/api/rentals")
     public ResponseEntity<Map<String, List<Map<String, Object>>>> getRentals(HttpServletRequest request) {
     List<RENTALS> rentalsList = dbRentalsRepository.findAll();
 
@@ -138,7 +140,29 @@ public class RentalsController {
     return ResponseEntity.ok(response);
 }
 
-    @GetMapping({"/api/rentals/{id}", "/api/rentals/{id}/"})
+    
+    @PutMapping({"/api/rentals/{id}"})
+    public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
+    System.out.println("------------Rental: " + rentalsDto.getId());
+    RENTALS rental = dbRentalsRepository.findById(id).get();
+    
+    rental.setName(rentalsDto.getName());
+    rental.setSurface(rentalsDto.getSurface());
+    rental.setPrice(rentalsDto.getPrice());
+    //rental.setPicture(rentalsDto.getPictureUrl());
+    rental.setDescription(rentalsDto.getDescription());
+    rental.setUpdatedAt(LocalDate.now());
+    dbRentalsRepository.save(rental);
+
+    // Crée une map avec le message de succès
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "Rental updated !");
+
+    System.out.println("Returning response...");
+    return ResponseEntity.ok(response);
+    }
+
+    @GetMapping({"/api/rentals/{id}"})
     public ResponseEntity<ObjectNode> getRental(@PathVariable Integer id) {
         RENTALS rental = dbRentalsRepository.findById(id).get();
 
@@ -160,25 +184,6 @@ public class RentalsController {
         return ResponseEntity.ok(rentalsDto);
     }
     
-    @PutMapping("/api/rentals/{id}")
-    public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
-    RENTALS rental = dbRentalsRepository.findById(id).get();
-    rental.setName(rentalsDto.getName());
-    rental.setSurface(rentalsDto.getSurface());
-    rental.setPrice(rentalsDto.getPrice());
-    rental.setPicture(rentalsDto.getPictureUrl());
-    rental.setDescription(rentalsDto.getDescription());
-    rental.setUpdatedAt(LocalDate.now());
-    dbRentalsRepository.save(rental);
-
-    // Crée une map avec le message de succès
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Rental updated !");
-
-    System.out.println("Returning response...");
-    return ResponseEntity.ok(response);
-    }
-
 
     private String savePictureFromRequest(MultipartFile image, HttpServletRequest request) throws IOException {
         // Vérifiez si le fichier est vide
