@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
-@RequestMapping()
 public class RentalsController {
     @Value("${base.picture.path}")
     private String basePicturePath;
@@ -91,78 +89,54 @@ public class RentalsController {
 
     @GetMapping("/api/rentals")
     public ResponseEntity<Map<String, List<Map<String, Object>>>> getRentals(HttpServletRequest request) {
-    List<RENTALS> rentalsList = dbRentalsRepository.findAll();
+        List<RENTALS> rentalsList = dbRentalsRepository.findAll();
 
-    // Recupère les valeurs de l'utilisateur authentifié
-    String token = request.getHeader("Authorization").substring(7);
-    Integer authenticatedUserId = jwtService.getUserIdFromToken(token);
-    System.out.println("Authenticated user ID: " + authenticatedUserId);
+        // Recupère les valeurs de l'utilisateur authentifié
+        String token = request.getHeader("Authorization").substring(7);
+        Integer authenticatedUserId = jwtService.getUserIdFromToken(token);
+        System.out.println("Authenticated user ID: " + authenticatedUserId);
 
-    List<Map<String, Object>> rentalsDtoList = new ArrayList<>();
+        List<Map<String, Object>> rentalsDtoList = new ArrayList<>();
 
-    for (RENTALS rental : rentalsList) {
-        RentalsDataTransferObject rentalsDto = new RentalsDataTransferObject();
-        Integer rentalOwner = rental.getOwnerId();
-        System.out.println("Rental owner ID: " + rentalOwner);
-        
-        rentalsDto.setId(rental.getId());
-        rentalsDto.setName(rental.getName());
-        rentalsDto.setSurface(rental.getSurface());
-        rentalsDto.setPrice(rental.getPrice());
-        rentalsDto.setPictureUrl(rental.getPicture());
-        rentalsDto.setDescription(rental.getDescription());
-        rentalsDto.setOwnerId(rental.getOwnerId());
-        rentalsDto.setCreated_at(rental.getCreatedAt());
-        rentalsDto.setUpdated_at(rental.getUpdatedAt());
+        for (RENTALS rental : rentalsList) {
+            RentalsDataTransferObject rentalsDto = new RentalsDataTransferObject();
+            Integer rentalOwner = rental.getOwnerId();
+            System.out.println("Rental owner ID: " + rentalOwner);
+            
+            rentalsDto.setId(rental.getId());
+            rentalsDto.setName(rental.getName());
+            rentalsDto.setSurface(rental.getSurface());
+            rentalsDto.setPrice(rental.getPrice());
+            rentalsDto.setPictureUrl(rental.getPicture());
+            rentalsDto.setDescription(rental.getDescription());
+            rentalsDto.setOwnerId(rental.getOwnerId());
+            rentalsDto.setCreated_at(rental.getCreatedAt());
+            rentalsDto.setUpdated_at(rental.getUpdatedAt());
 
-        Map<String, Object> rentalMap = new HashMap<>();
-        rentalMap.put("id", rentalsDto.getId());
-        rentalMap.put("name", rentalsDto.getName());
-        rentalMap.put("surface", rentalsDto.getSurface());
-        rentalMap.put("price", rentalsDto.getPrice());
-        rentalMap.put("picture", rentalsDto.getPictureUrl());
-        rentalMap.put("description", rentalsDto.getDescription());
-        if (authenticatedUserId.equals(rentalOwner)) {
+            Map<String, Object> rentalMap = new HashMap<>();
+            rentalMap.put("id", rentalsDto.getId());
+            rentalMap.put("name", rentalsDto.getName());
+            rentalMap.put("surface", rentalsDto.getSurface());
+            rentalMap.put("price", rentalsDto.getPrice());
+            rentalMap.put("picture", rentalsDto.getPictureUrl());
+            rentalMap.put("description", rentalsDto.getDescription());
+            if (authenticatedUserId.equals(rentalOwner)) {
+                rentalMap.put("ownerId", rentalsDto.getOwnerId());
+            } else {
+                rentalMap.put("owner_id", rentalsDto.getOwnerId());
+            }
             rentalMap.put("ownerId", rentalsDto.getOwnerId());
-        } else {
-            rentalMap.put("owner_id", rentalsDto.getOwnerId());
+            rentalMap.put("created_at", rentalsDto.getCreated_at());
+            rentalMap.put("updated_at", rentalsDto.getUpdated_at());
+
+            rentalsDtoList.add(rentalMap);
         }
-        rentalMap.put("ownerId", rentalsDto.getOwnerId());
-        rentalMap.put("created_at", rentalsDto.getCreated_at());
-        rentalMap.put("updated_at", rentalsDto.getUpdated_at());
-
-        rentalsDtoList.add(rentalMap);
+        Map<String, List<Map<String, Object>>> response = new HashMap<>();
+        response.put("rentals", rentalsDtoList);
+        return ResponseEntity.ok(response);
     }
 
-    Map<String, List<Map<String, Object>>> response = new HashMap<>();
-    response.put("rentals", rentalsDtoList);
-
-    return ResponseEntity.ok(response);
-}
-
-    
-    @PutMapping({"/api/rentals/{id}"})
-    public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
-    System.out.println("------------Rental: " + rentalsDto.getId());
-    RENTALS rental = dbRentalsRepository.findById(id).get();
-    
-    rental.setName(rentalsDto.getName());
-    rental.setSurface(rentalsDto.getSurface());
-    rental.setPrice(rentalsDto.getPrice());
-    //rental.setPicture(rentalsDto.getPictureUrl());
-    rental.setDescription(rentalsDto.getDescription());
-    rental.setUpdatedAt(LocalDate.now());
-    dbRentalsRepository.save(rental);
-
-    // Crée une map avec le message de succès
-    Map<String, String> response = new HashMap<>();
-    response.put("message", "Rental updated !");
-
-    System.out.println("Returning response...");
-    return ResponseEntity.ok(response);
-    }
-
-    @GetMapping({"/api/rentals/{id}"})
+    @GetMapping("/api/rentals/{id}")
     public ResponseEntity<ObjectNode> getRental(@PathVariable Integer id) {
         RENTALS rental = dbRentalsRepository.findById(id).get();
 
@@ -183,7 +157,26 @@ public class RentalsController {
 
         return ResponseEntity.ok(rentalsDto);
     }
-    
+    @PutMapping("/api/rentals/{id}")
+    public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
+        System.out.println("------------Rental: " + rentalsDto.getId());
+        RENTALS rental = dbRentalsRepository.findById(id).get();
+        
+        rental.setName(rentalsDto.getName());
+        rental.setSurface(rentalsDto.getSurface());
+        rental.setPrice(rentalsDto.getPrice());
+        //rental.setPicture(rentalsDto.getPictureUrl());
+        rental.setDescription(rentalsDto.getDescription());
+        rental.setUpdatedAt(LocalDate.now());
+        dbRentalsRepository.save(rental);
+
+        // Crée une map avec le message de succès
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Rental updated !");
+
+        System.out.println("Returning response...");
+        return ResponseEntity.ok(response);
+    }    
 
     private String savePictureFromRequest(MultipartFile image, HttpServletRequest request) throws IOException {
         // Vérifiez si le fichier est vide
