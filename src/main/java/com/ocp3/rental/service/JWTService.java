@@ -89,4 +89,6 @@ public class JWTService {
         Optional<USERS> existingUser = dbocp3Repository.findByEmail(email);
         return existingUser.get();
     }
+
+    
 }

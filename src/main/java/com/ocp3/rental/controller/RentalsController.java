@@ -1,20 +1,16 @@
 package com.ocp3.rental.controller;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +21,7 @@ import com.ocp3.rental.DTO.RentalsDataTransferObject;
 import com.ocp3.rental.model.RENTALS;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBRentalsRepository;
+import com.ocp3.rental.service.ApiServices;
 import com.ocp3.rental.service.JWTService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,12 +37,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class RentalsController {
     @Value("${base.picture.path}")
     private String basePicturePath;
-
+    
     @Autowired
     private DBRentalsRepository dbRentalsRepository;
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private ApiServices apiServices;
 
     @PostMapping("/api/rentals")
     public ResponseEntity<?> rentals(HttpServletRequest request,
@@ -60,7 +60,7 @@ public class RentalsController {
         System.out.println("ID authenticated: " + authenticatedUserId);
 
         // Enregistre l'image et récupère le chemin du fichier
-        String pictureName = savePictureFromRequest(image, request);
+        String pictureName = apiServices.savePictureFromRequest(image, request);
         System.out.println("Picture name: " + pictureName);
         
         // Crée un nouvel objet RENTALS à partir du DTO
@@ -165,7 +165,6 @@ public class RentalsController {
         rental.setName(rentalsDto.getName());
         rental.setSurface(rentalsDto.getSurface());
         rental.setPrice(rentalsDto.getPrice());
-        //rental.setPicture(rentalsDto.getPictureUrl());
         rental.setDescription(rentalsDto.getDescription());
         rental.setUpdatedAt(LocalDate.now());
         dbRentalsRepository.save(rental);
@@ -176,31 +175,5 @@ public class RentalsController {
 
         System.out.println("Returning response...");
         return ResponseEntity.ok(response);
-    }    
-
-    private String savePictureFromRequest(MultipartFile image, HttpServletRequest request) throws IOException {
-        // Vérifiez si le fichier est vide
-        if (image.isEmpty()) {
-            throw new IllegalArgumentException("Cannot upload empty file");
-        }
-
-        // Générer le nom du fichier
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(image.getOriginalFilename()));
-
-        // Créer le chemin du fichier
-        Path uploadPath = Paths.get("src/main/resources/static/images/");
-
-        // Créer le répertoire s'il n'existe pas
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        // Enregistrer le fichier
-        Path filePath = uploadPath.resolve(fileName);
-        System.out.println("------ File path: " + filePath);
-        image.transferTo(filePath);
-        
-
-        return fileName.toString();
-    }
+    }      
 }
