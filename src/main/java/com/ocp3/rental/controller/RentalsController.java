@@ -136,8 +136,9 @@ public class RentalsController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/rentals/{id}")
+    /* @GetMapping("/api/rentals/{id}")
     public ResponseEntity<ObjectNode> getRental(@PathVariable Integer id) {
+        System.out.println("------------Rental GET id: " + id);
         RENTALS rental = dbRentalsRepository.findById(id).get();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -156,10 +157,41 @@ public class RentalsController {
         System.out.println("Returning rental..." + rentalsDto);
 
         return ResponseEntity.ok(rentalsDto);
+    } */
+    @GetMapping("/api/rentals/{id}")
+        public ResponseEntity<Map<String, Object>> getRental(@PathVariable Integer id){
+        RENTALS rental = dbRentalsRepository.findById(id).get();
+    
+        RentalsDataTransferObject rentalsDto = new RentalsDataTransferObject();
+        rentalsDto.setId(rental.getId());
+        rentalsDto.setName(rental.getName());
+        rentalsDto.setSurface(rental.getSurface());
+        rentalsDto.setPrice(rental.getPrice());
+        rentalsDto.setPictureUrl(rental.getPicture());
+        rentalsDto.setDescription(rental.getDescription());
+        rentalsDto.setOwnerId(rental.getOwnerId());
+        rentalsDto.setCreated_at(rental.getCreatedAt());
+        rentalsDto.setUpdated_at(rental.getUpdatedAt());
+    
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", rentalsDto.getId());
+        response.put("name", rentalsDto.getName());
+        response.put("surface", rentalsDto.getSurface());
+        response.put("price", rentalsDto.getPrice());
+        response.put("picture", rentalsDto.getPictureUrl());
+        response.put("description", rentalsDto.getDescription());
+        response.put("ownerId", rentalsDto.getOwnerId());
+        response.put("createdAt", rentalsDto.getCreated_at());
+        response.put("updatedAt", rentalsDto.getUpdated_at());
+
+        System.out.println("Returning rental..." + response);
+
+        return ResponseEntity.ok(response);
     }
+
     @PutMapping("/api/rentals/{id}")
     public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
-        System.out.println("------------Rental: " + rentalsDto.getId());
+        System.out.println("------------Rental PUT id: " + rentalsDto.getId());
         RENTALS rental = dbRentalsRepository.findById(id).get();
         
         rental.setName(rentalsDto.getName());
