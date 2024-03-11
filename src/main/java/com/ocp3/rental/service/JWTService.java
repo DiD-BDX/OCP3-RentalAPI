@@ -2,11 +2,16 @@ package com.ocp3.rental.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,6 +22,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.stereotype.Service;
 
+import com.ocp3.rental.DTO.UsersDataTransferObject;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBocp3Repository;
 
@@ -28,6 +34,9 @@ public class JWTService {
     @Autowired // Injection de dépendances pour CustomUserDetailsService
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired // Injection de dépendances pour AuthenticationManager, UserDetailsService et JWTService
+    private  UserDetailsService userDetailsService;
+    
     @Autowired
     private DBocp3Repository dbocp3Repository;
 
@@ -90,5 +99,17 @@ public class JWTService {
         return existingUser.get();
     }
 
-    
+    public ResponseEntity<?> GenerateTokenMapFromUser(String email) {
+        // Charge les détails de l'utilisateur à partir de l'email fourni
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        // Crée un objet Authentication avec le nom d'utilisateur et aucun mot de passe
+        final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
+        // Génère un token JWT à partir de l'objet Authentication
+        final String token = generateToken(authentication);
+        // Crée une map avec le token JWT
+        Map<String, String> tokenMap = new HashMap<String, String>();
+        tokenMap.put("token", token);
+        // Renvoie une réponse avec la map du token JWT
+        return ResponseEntity.ok(tokenMap);
+    }    
 }
