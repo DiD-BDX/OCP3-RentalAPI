@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ocp3.rental.DTO.RentalsDataTransferObject;
 import com.ocp3.rental.model.RENTALS;
 import com.ocp3.rental.model.USERS;
@@ -24,6 +22,12 @@ import com.ocp3.rental.repository.DBRentalsRepository;
 import com.ocp3.rental.service.ApiServices;
 import com.ocp3.rental.service.JWTService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -47,6 +51,19 @@ public class RentalsController {
     @Autowired
     private ApiServices apiServices;
 
+    @Operation(summary = "Create a new rental", security = {
+        @SecurityRequirement(name = "bearerToken")})
+    
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Message send with success",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "{\"message\":\"Rental created !\"}")
+        })),
+        @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "")
+        }))
+    })
     @PostMapping("/api/rentals")
     public ResponseEntity<?> rentals(HttpServletRequest request,
         @ModelAttribute RentalsDataTransferObject rentalsDto,
@@ -87,6 +104,55 @@ public class RentalsController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "List all rentals", security = {
+        @SecurityRequirement(name = "bearerToken")})
+    
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "List of rentals with success",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "{ \n" + //
+                                                "  \"rentals\": [\n" + //
+                                                "  {\n" + //
+                                                "\t\"id\": 1,\n" + //
+                                                "\t\"name\": \"test house 1\",\n" + //
+                                                "\t\"surface\": 432,\n" + //
+                                                "\t\"price\": 300,\n" + //
+                                                "\t\"picture\": \"https://blog.technavio.org/wp-content/uploads/2018/12/Online-House-Rental-Sites.jpg\",\n" + //
+                                                "\t\"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam a lectus eleifend, varius massa ac, mollis tortor. Quisque ipsum nulla, faucibus ac metus a, eleifend efficitur augue. Integer vel pulvinar ipsum. Praesent mollis neque sed sagittis ultricies. Suspendisse congue ligula at justo molestie, eget cursus nulla tincidunt. Pellentesque elementum rhoncus arcu, viverra gravida turpis mattis in. Maecenas tempor elementum lorem vel ultricies. Nam tempus laoreet eros, et viverra libero tincidunt a. Nunc vel nisi vulputate, sodales massa eu, varius erat.\",\n" + //
+                                                "\t\"owner_id\": 1,\n" + //
+                                                "\t\"created_at\": \"2012/12/02\",\n" + //
+                                                "\t\"updated_at\": \"2014/12/02\"  \n" + //
+                                                "},\n" + //
+                                                "{\n" + //
+                                                "\t\"id\": 1,\n" + //
+                                                "\t\"name\": \"test house 2\",\n" + //
+                                                "\t\"surface\": 154,\n" + //
+                                                "\t\"price\": 200,\n" + //
+                                                "\t\"picture\": \"https://blog.technavio.org/wp-content/uploads/2018/12/Online-House-Rental-Sites.jpg\",\n" + //
+                                                "\t\"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam a lectus eleifend, varius massa ac, mollis tortor. Quisque ipsum nulla, faucibus ac metus a, eleifend efficitur augue. Integer vel pulvinar ipsum. Praesent mollis neque sed sagittis ultricies. Suspendisse congue ligula at justo molestie, eget cursus nulla tincidunt. Pellentesque elementum rhoncus arcu, viverra gravida turpis mattis in. Maecenas tempor elementum lorem vel ultricies. Nam tempus laoreet eros, et viverra libero tincidunt a. Nunc vel nisi vulputate, sodales massa eu, varius erat.\",\n" + //
+                                                "\t\"owner_id\": 2,\n" + //
+                                                "\t\"created_at\": \"2012/12/02\",\n" + //
+                                                "\t\"updated_at\": \"2014/12/02\"  \n" + //
+                                                "},{\n" + //
+                                                "\t\"id\": 3,\n" + //
+                                                "\t\"name\": \"test house 3\",\n" + //
+                                                "\t\"surface\": 234,\n" + //
+                                                "\t\"price\": 100,\n" + //
+                                                "\t\"picture\": \"https://blog.technavio.org/wp-content/uploads/2018/12/Online-House-Rental-Sites.jpg\",\n" + //
+                                                "\t\"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam a lectus eleifend, varius massa ac, mollis tortor. Quisque ipsum nulla, faucibus ac metus a, eleifend efficitur augue. Integer vel pulvinar ipsum. Praesent mollis neque sed sagittis ultricies. Suspendisse congue ligula at justo molestie, eget cursus nulla tincidunt. Pellentesque elementum rhoncus arcu, viverra gravida turpis mattis in. Maecenas tempor elementum lorem vel ultricies. Nam tempus laoreet eros, et viverra libero tincidunt a. Nunc vel nisi vulputate, sodales massa eu, varius erat.\",\n" + //
+                                                "\t\"owner_id\": 1,\n" + //
+                                                "\t\"created_at\": \"2012/12/02\",\n" + //
+                                                "\t\"updated_at\": \"2014/12/02\"  \n" + //
+                                                "}\n" + //
+                                                "  \n" + //
+                                                "  ]\n" + //
+                                                "}")
+        })),
+        @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "")
+        }))
+    })
     @GetMapping("/api/rentals")
     public ResponseEntity<Map<String, List<Map<String, Object>>>> getRentals(HttpServletRequest request) {
         List<RENTALS> rentalsList = dbRentalsRepository.findAll();
@@ -136,28 +202,29 @@ public class RentalsController {
         return ResponseEntity.ok(response);
     }
 
-    /* @GetMapping("/api/rentals/{id}")
-    public ResponseEntity<ObjectNode> getRental(@PathVariable Integer id) {
-        System.out.println("------------Rental GET id: " + id);
-        RENTALS rental = dbRentalsRepository.findById(id).get();
-
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode rentalsDto = mapper.createObjectNode();
-
-        rentalsDto.put("id", rental.getId());
-        rentalsDto.put("name", rental.getName());
-        rentalsDto.put("surface", rental.getSurface());
-        rentalsDto.put("price", rental.getPrice());
-        rentalsDto.put("picture", rental.getPicture());
-        rentalsDto.put("description", rental.getDescription());
-        rentalsDto.put("owner_id", rental.getOwnerId());
-        rentalsDto.put("created_at", rental.getCreatedAt().toString());
-        rentalsDto.put("updated_at", rental.getUpdatedAt().toString());
-
-        System.out.println("Returning rental..." + rentalsDto);
-
-        return ResponseEntity.ok(rentalsDto);
-    } */
+    @Operation(summary = "Details of a rental", security = {
+        @SecurityRequirement(name = "bearerToken")})
+    
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Details of a rental with success",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "{\n" + //
+                                                "\t\"id\": 1,\n" + //
+                                                "\t\"name\": \"dream house\",\n" + //
+                                                "\t\"surface\": 24,\n" + //
+                                                "\t\"price\": 30,\n" + //
+                                                "\t\"picture\": [\"https://blog.technavio.org/wp-content/uploads/2018/12/Online-House-Rental-Sites.jpg\"],\n" + //
+                                                "\t\"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam a lectus eleifend, varius massa ac, mollis tortor. Quisque ipsum nulla, faucibus ac metus a, eleifend efficitur augue. Integer vel pulvinar ipsum. Praesent mollis neque sed sagittis ultricies. Suspendisse congue ligula at justo molestie, eget cursus nulla tincidunt. Pellentesque elementum rhoncus arcu, viverra gravida turpis mattis in. Maecenas tempor elementum lorem vel ultricies. Nam tempus laoreet eros, et viverra libero tincidunt a. Nunc vel nisi vulputate, sodales massa eu, varius erat.\",\n" + //
+                                                "\t\"owner_id\": 1,\n" + //
+                                                "\t\"created_at\": \"2012/12/02\",\n" + //
+                                                "\t\"updated_at\": \"2014/12/02\"  \n" + //
+                                                "}")
+        })),
+        @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "")
+        }))
+    })
     @GetMapping("/api/rentals/{id}")
         public ResponseEntity<Map<String, Object>> getRental(@PathVariable Integer id){
         RENTALS rental = dbRentalsRepository.findById(id).get();
@@ -189,6 +256,19 @@ public class RentalsController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Edit a rental", security = {
+        @SecurityRequirement(name = "bearerToken")})
+    
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Rental updated with success",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "{\"message\":\"Rental updated !\"}")
+        })),
+        @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "")
+        }))
+    })
     @PutMapping("/api/rentals/{id}")
     public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
         System.out.println("------------Rental PUT id: " + rentalsDto.getId());

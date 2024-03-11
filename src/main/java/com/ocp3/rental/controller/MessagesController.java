@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ocp3.rental.DTO.MessagesDataTransferObject;
@@ -19,6 +18,12 @@ import com.ocp3.rental.model.RENTALS;
 import com.ocp3.rental.repository.DBMessagesRepository;
 import com.ocp3.rental.repository.DBRentalsRepository;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,7 +32,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 
 @RestController
-@RequestMapping("/api/messages**")
 public class MessagesController {
 
     @Autowired
@@ -35,8 +39,25 @@ public class MessagesController {
 
     @Autowired
     private DBRentalsRepository dbRentalsRepository;
-
-    @PostMapping
+    
+    @Operation(summary = "Send a message to the owner of a rental", security = {
+        @SecurityRequirement(name = "bearerToken")})
+    
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Message send with success",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "{\"message\":\"Message send with success\"}")
+        })),
+        @ApiResponse(responseCode = "400", description = "bad Request",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "{}")
+        })),
+        @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json",
+                    examples = { @ExampleObject(value = "")
+        }))
+    })
+    @PostMapping("/api/messages**")
     public ResponseEntity<?> messages(HttpServletRequest request, @RequestBody MessagesDataTransferObject messages) {
         System.out.println("Starting register method...");
 
