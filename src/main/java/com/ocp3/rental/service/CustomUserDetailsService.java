@@ -51,12 +51,15 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     public USERS registerUser(UsersDataTransferObject usersDto) {
+        // Crée une nouvelle instance de l'entité USERS
         USERS users = new USERS();
+        // Remplit l'entité USERS avec les données de l'objet usersDto
         users.setEmail(usersDto.getEmail());
         users.setPassword(usersDto.getPassword());
         users.setName(usersDto.getName());
         users.setCreatedAt(usersDto.getCreated_at());
         users.setUpdatedAt(usersDto.getUpdated_at());
+        // Enregistre l'entité USERS dans la base de données et retourne l'entité enregistrée
         return dbocp3Repository.save(users);
     }
 }

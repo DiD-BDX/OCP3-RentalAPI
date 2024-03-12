@@ -16,15 +16,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Component // Indique que cette classe est un composant Spring
+@Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
-    @Autowired // Injection de dépendances pour JWTService
+    @Autowired
     private JWTService jwtService;
-    @Autowired // Injection de dépendances pour CustomUserDetailsService
+    @Autowired
     private CustomUserDetailsService customUserDetailsService; 
 
-    // Cette méthode est appelée pour chaque requête HTTP
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {       
@@ -33,59 +32,50 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         
         // Vérifie si le header "Authorization" existe et commence par "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            // Récupère le token JWT du header "Authorization"
-            String authToken = authHeader.substring(7); // Le token est après "Bearer "
-            // Récupère l'email de l'utilisateur à partir du token JWT
+            // Récupère le token à partir du header "Authorization"
+            String authToken = authHeader.substring(7);
+            // Récupère le nom d'utilisateur à partir du token
             String username = jwtService.getUserEmailFromToken(authToken);
 
-            // Vérifie si l'email de l'utilisateur existe et si l'utilisateur n'est pas déjà authentifié
+            // Vérifie si le nom d'utilisateur existe et si l'utilisateur n'est pas déjà authentifié
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Charge les détails de l'utilisateur à partir de l'email
+                // Récupère les détails de l'utilisateur à partir du nom d'utilisateur
                 UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
 
-                // Vérifie si le token JWT est valide
+                // Vérifie si le token est valide
                 if (jwtService.validateToken(authToken, userDetails)) {
-                    // Crée une authentification à partir des détails de l'utilisateur
+                    // Crée un objet d'authentification à partir des détails de l'utilisateur
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
-                    System.out.println("Authentication : " + authentication);
-                    // Ajoute les détails de la requête à l'authentification
+                    // Définit les détails de l'authentification à partir de la requête
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    // Enregistre l'authentification dans le contexte de sécurité
+                    // Définit l'authentification dans le contexte de sécurité
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    System.out.println("SecurityContextHolder.getContext().getAuthentication() : " + SecurityContextHolder.getContext().getAuthentication());
                 }
             }
         } else if (request.getMethod().equals("GET") && request.getRequestURI().equals("/api/auth/me")) {
-            // Si la condition if n'est pas remplie, mais que la requête est une requête GET sur /api/auth/me,
-            // renvoie une réponse HTTP 401 avec un corps JSON vide
+            // Si la requête est une requête GET à l'URL "/api/auth/me", définit le statut de la réponse à 401 (Non autorisé)
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            // Définit le type de contenu de la réponse à JSON
             response.setContentType("application/json");
+            // Écrit un corps vide dans la réponse
             response.getWriter().write("{}");
             return;
         }
-         // Vérifie si le header Authorization est différent de Bearer jwt
-         String authorizationHeader = request.getHeader("Authorization");
-         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer")) {
-             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-             return;
-         }
 
         // Passe la requête et la réponse au prochain filtre dans la chaîne
         chain.doFilter(request, response);
     }
 
-    // Cette méthode détermine si le filtre doit être appliqué ou non à la requête
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-    String path = request.getServletPath();
-    System.out.println("Actual path : " + path);
-    boolean shouldNotFilter = path.equals("/api/auth/login")
-        || path.equals("/api/auth/register")
-        || path.startsWith("/swagger-ui")
-        || path.startsWith("/v3/")
-        || PathRequest.toStaticResources().atCommonLocations().matches(request);
-    System.out.println("Should not filter: " + shouldNotFilter);
-    return shouldNotFilter;
+        // Récupère le chemin de la requête
+        String path = request.getServletPath();
+        // Vérifie si le chemin correspond à l'un des chemins spécifiés
+        return path.equals("/api/auth/login")
+            || path.equals("/api/auth/register")
+            || path.startsWith("/swagger-ui")
+            || path.startsWith("/v3/")
+            || PathRequest.toStaticResources().atCommonLocations().matches(request);
     }
 }

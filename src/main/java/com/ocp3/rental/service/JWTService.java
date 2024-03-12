@@ -2,9 +2,7 @@ package com.ocp3.rental.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -50,42 +49,56 @@ public class JWTService {
 
     // Génère un token JWT pour une authentification donnée
     public String generateToken(Authentication authentication) {
-        String userEmail = authentication.getName(); // Obtient le nom d'utilisateur (email)
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail); // Charge les détails de l'utilisateur
-        String email = userDetails.getUsername(); // Obtient l'email de l'utilisateur
-        Instant now = Instant.now(); // Obtient l'heure actuelle
-        // Construit les revendications JWT
+        // Récupère les détails de l'utilisateur à partir de l'objet d'authentification
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(authentication.getName());
+    
+        // Obtient l'heure actuelle
+        Instant now = Instant.now();
+    
+        // Construit un ensemble de revendications JWT avec l'émetteur, l'heure d'émission, l'heure d'expiration (24 heures plus tard) et le sujet (nom d'utilisateur)
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self") // L'émetteur du token
-                .issuedAt(now) // L'heure d'émission du token
-                .expiresAt(now.plus(1, ChronoUnit.DAYS)) // L'heure d'expiration du token (1 jour plus tard)
-                .subject(email) // Le sujet du token (l'email de l'utilisateur)
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.DAYS))
+                .subject(userDetails.getUsername())
                 .build();
-        // Paramètres pour l'encodage du JWT
+    
+        // Construit les paramètres de l'encodeur JWT à partir de l'en-tête JWS et de l'ensemble de revendications
         JwtEncoderParameters jwtEncoderParameters = JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims);
-        Jwt jwt = this.jwtEncoderApi.encode(jwtEncoderParameters); // Encode le JWT
-        return jwt.getTokenValue(); // Retourne la valeur du token JWT
+    
+        // Encode l'ensemble de revendications en un token JWT
+        Jwt jwt = this.jwtEncoderApi.encode(jwtEncoderParameters);
+    
+        // Retourne la valeur du token JWT
+        return jwt.getTokenValue();
     }
 
     // Obtient l'email de l'utilisateur à partir du token JWT
     public String getUserEmailFromToken(String token) {
-        Jwt jwt = jwtDecoderApi.decode(token); // Décode le token JWT
-        return jwt.getClaimAsString("sub"); // Retourne la revendication "sub" (l'email de l'utilisateur) en tant que chaîne
+        // Décode le token JWT
+        Jwt jwt = jwtDecoderApi.decode(token);
+        // Récupère l'email de l'utilisateur à partir de la revendication "sub" du token JWT
+        return jwt.getClaimAsString("sub");
     }
-
+    
     public Integer getUserIdFromToken(String token) {
-        String email = getUserEmailFromToken(token); // Obtient l'email de l'utilisateur à partir du token
-        Optional<USERS> existingUser = dbocp3Repository.findByEmail(email); // Récupère l'utilisateur à partir de l'email
-        return existingUser.get().getId(); // Retourne l'ID de l'utilisateur
+        // Récupère l'email de l'utilisateur à partir du token
+        String email = getUserEmailFromToken(token);
+        // Récupère l'utilisateur à partir de l'email
+        USERS user = dbocp3Repository.findByEmail(email)
+            // Si l'utilisateur n'est pas trouvé, lance une exception
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        // Retourne l'ID de l'utilisateur
+        return user.getId();
     }
-
-    // Valide le token JWT
+    
     public boolean validateToken(String token, UserDetails userDetails) {
-    Jwt jwt = jwtDecoderApi.decode(token); // Décode le token JWT
-    String email = userDetails.getUsername(); // Obtient l'email de l'utilisateur
-    System.out.println("Email de l'utilisateur : " + email); // Affiche l'email de l'utilisateur
-    // Vérifie si la revendication "sub" est égale à l'email de l'utilisateur et si le token JWT n'a pas d'erreurs
-    return jwt.getClaimAsString("sub").equals(email) && !JwtValidators.createDefault().validate(jwt).hasErrors();
+        // Décode le token JWT
+        Jwt jwt = jwtDecoderApi.decode(token);
+        // Récupère l'email de l'utilisateur à partir des détails de l'utilisateur
+        String email = userDetails.getUsername();
+        // Vérifie si l'email de l'utilisateur correspond à la revendication "sub" du token JWT et si le token est valide
+        return jwt.getClaimAsString("sub").equals(email) && !JwtValidators.createDefault().validate(jwt).hasErrors();
     }
 
     public USERS getUserFromRequest(HttpServletRequest request) {
@@ -94,21 +107,21 @@ public class JWTService {
         // Récupère l'email de l'utilisateur à partir du token
         String email = getUserEmailFromToken(token);
         // Récupère l'utilisateur à partir de l'email
-        Optional<USERS> existingUser = dbocp3Repository.findByEmail(email);
-        return existingUser.get();
+        return dbocp3Repository.findByEmail(email)
+            // Si l'utilisateur n'est pas trouvé, lance une exception
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
-
+    
     public ResponseEntity<?> GenerateTokenMapFromUser(String email) {
-        // Charge les détails de l'utilisateur à partir de l'email fourni
+        // Récupère les détails de l'utilisateur à partir de l'email
         final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        // Crée un objet Authentication avec le nom d'utilisateur et aucun mot de passe
+        // Crée un objet d'authentification à partir du nom d'utilisateur
         final Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null);
-        // Génère un token JWT à partir de l'objet Authentication
+        // Génère un token à partir de l'objet d'authentification
         final String token = generateToken(authentication);
         // Crée une map avec le token JWT
-        Map<String, String> tokenMap = new HashMap<String, String>();
-        tokenMap.put("token", token);
-        // Renvoie une réponse avec la map du token JWT
+        Map<String, String> tokenMap = Map.of("token", token);
+        // Retourne la map sous format JSON
         return ResponseEntity.ok(tokenMap);
-    }    
+    }   
 }

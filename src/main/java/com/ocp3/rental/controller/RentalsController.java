@@ -1,6 +1,7 @@
 package com.ocp3.rental.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +24,8 @@ import com.ocp3.rental.service.ApiServices;
 import com.ocp3.rental.service.JWTService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -71,14 +74,10 @@ public class RentalsController {
 
         // Récupère l'utilisateur authentifié à partir de la requête
         USERS users = jwtService.getUserFromRequest(request);
-        String authenticatedUser = users.getName();
-        System.out.println("Authenticated user: " + authenticatedUser);
         Integer authenticatedUserId = users.getId();
-        System.out.println("ID authenticated: " + authenticatedUserId);
 
         // Enregistre l'image et récupère le chemin du fichier
         String pictureName = apiServices.savePictureFromRequest(image, request);
-        System.out.println("Picture name: " + pictureName);
         
         // Crée un nouvel objet RENTALS à partir du DTO
         RENTALS rentals = new RENTALS();
@@ -160,14 +159,12 @@ public class RentalsController {
         // Recupère les valeurs de l'utilisateur authentifié
         String token = request.getHeader("Authorization").substring(7);
         Integer authenticatedUserId = jwtService.getUserIdFromToken(token);
-        System.out.println("Authenticated user ID: " + authenticatedUserId);
 
         List<Map<String, Object>> rentalsDtoList = new ArrayList<>();
 
         for (RENTALS rental : rentalsList) {
             RentalsDataTransferObject rentalsDto = new RentalsDataTransferObject();
             Integer rentalOwner = rental.getOwnerId();
-            System.out.println("Rental owner ID: " + rentalOwner);
             
             rentalsDto.setId(rental.getId());
             rentalsDto.setName(rental.getName());
@@ -248,10 +245,8 @@ public class RentalsController {
         response.put("picture", rentalsDto.getPictureUrl());
         response.put("description", rentalsDto.getDescription());
         response.put("ownerId", rentalsDto.getOwnerId());
-        response.put("createdAt", rentalsDto.getCreated_at());
-        response.put("updatedAt", rentalsDto.getUpdated_at());
-
-        System.out.println("Returning rental..." + response);
+        response.put("created_at", rentalsDto.getCreated_at());
+        response.put("updated_at", rentalsDto.getUpdated_at());
 
         return ResponseEntity.ok(response);
     }
@@ -270,8 +265,19 @@ public class RentalsController {
         }))
     })
     @PutMapping("/api/rentals/{id}")
-    public ResponseEntity<?> updateRental(@PathVariable Integer id, @ModelAttribute RentalsDataTransferObject rentalsDto) {
-        System.out.println("------------Rental PUT id: " + rentalsDto.getId());
+    public ResponseEntity<?> updateRental(
+    @PathVariable Integer id, 
+    @Parameter(description = "Rental's name", example = "My Rental", in = ParameterIn.QUERY) @RequestParam String name,
+    @Parameter(description = "Rental's surface", example = "100", in = ParameterIn.QUERY) @RequestParam BigDecimal surface,
+    @Parameter(description = "Rental's price", example = "1000", in = ParameterIn.QUERY) @RequestParam BigDecimal price,
+    @Parameter(description = "Rental's description", example = "A beautiful rental", in = ParameterIn.QUERY) @RequestParam String description
+) {
+    RentalsDataTransferObject rentalsDto = new RentalsDataTransferObject();
+    rentalsDto.setName(name);
+    rentalsDto.setSurface(surface);
+    rentalsDto.setPrice(price);
+    rentalsDto.setDescription(description);   
+        
         RENTALS rental = dbRentalsRepository.findById(id).get();
         
         rental.setName(rentalsDto.getName());
@@ -287,5 +293,5 @@ public class RentalsController {
 
         System.out.println("Returning response...");
         return ResponseEntity.ok(response);
-    }      
+    }     
 }

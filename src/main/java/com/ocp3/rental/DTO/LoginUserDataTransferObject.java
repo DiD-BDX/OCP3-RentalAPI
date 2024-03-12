@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UsersDataTransferObject {
+public class LoginUserDataTransferObject {
     // Définition des champs de l'objet avec l'annotation @Schema pour la documentation Swagger
     // Le champ est en lecture seule dans la documentation Swagger
     @Schema(readOnly = true)
@@ -24,8 +24,8 @@ public class UsersDataTransferObject {
     @Schema(example = "test@test.com")
     private String email;
 
-    // Exemple de valeur pour la documentation Swagger
-    @Schema(example = "Test User")
+    // Le champ est en lecture seule dans la documentation Swagger
+    @Schema(readOnly = true)
     private String name;
 
     // Exemple de valeur pour la documentation Swagger

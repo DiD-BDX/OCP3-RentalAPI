@@ -1,6 +1,9 @@
 package com.ocp3.rental.controller;
 
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.ocp3.rental.DTO.LoginUserDataTransferObject;
 import com.ocp3.rental.DTO.UsersDataTransferObject;
 import com.ocp3.rental.model.USERS;
 import com.ocp3.rental.repository.DBocp3Repository;
@@ -17,10 +20,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +31,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -75,18 +76,17 @@ public class UsersController {
         }))
     })
     @PostMapping("/api/auth/login") // Mappe cette méthode à l'URL "/api/auth/login" pour les requêtes POST
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody Map<String, Object> body) throws Exception {
-        String email = (String) body.get("email");
-        String password = (String) body.get("password");
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginUserDataTransferObject usersDto) {
+        String email = usersDto.getEmail();
+        String password = usersDto.getPassword();
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
         try {
             // Tente d'authentifier l'utilisateur avec l'email et le mot de passe fournis
-            authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
-            );
+            authManager.authenticate(authenticationToken);
         } catch (AuthenticationException e) {
             // Si l'authentification échoue, crée une map avec un message d'erreur
-            Map<String, String> responseBody = new HashMap<>();
-            responseBody.put( "message: ","error");
+            Map<String, String> responseBody = Map.of("message", "error");
 
             // Retourne la map sous format JSON avec un statut HTTP 401 (Non autorisé)
             return new ResponseEntity<>(responseBody, HttpStatus.UNAUTHORIZED);
@@ -94,7 +94,6 @@ public class UsersController {
 
         // Affiche le token à partir de l'email fourni
         return jwtService.GenerateTokenMapFromUser(email);
-        
     }
 
     @Operation(summary = "Register a user", security = {
@@ -112,25 +111,21 @@ public class UsersController {
                     examples = { @ExampleObject(value = "{}")
         }))
     })
-    @PostMapping("/api/auth/register") // Mappe cette méthode à l'URL "/api/auth/register" pour les requêtes POST
-    public ResponseEntity<?> register(@RequestBody UsersDataTransferObject usersDto) { // Prend en paramètre un objet usersDto qui est automatiquement converti à partir du corps de la requête HTTP
-        System.out.println("Starting register method...");
-        System.out.println(usersDto);
-        
+    @PostMapping("/api/auth/register")
+    public ResponseEntity<?> register(@RequestBody UsersDataTransferObject usersDto) {
         // Vérifie si un utilisateur avec le même email existe déjà
-        Optional<USERS> existingUser = dbocp3Repository.findByEmail(usersDto.getEmail());
-        if (existingUser.isPresent()) {
-            // Si c'est le cas, renvoie une réponse avec le statut HTTP 400 (Bad Request) et un message d'erreur
-            return new ResponseEntity<>("{\"error\":\"Existing user with this Email\"}", HttpStatus.BAD_REQUEST);
-        }
+        dbocp3Repository.findByEmail(usersDto.getEmail())
+            .ifPresent(user -> {
+                // Si c'est le cas, renvoie une exception
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Existing user with this Email");
+            });
 
-        usersDto.setPassword(usersDto.getPassword());
         usersDto.setCreated_at(LocalDate.now());
         usersDto.setUpdated_at(LocalDate.now());
-        System.out.println("UserDto avant enr dans la DB: " + usersDto);
-        // encodage du password avant enregistrement dans la DB
+
+        // Encodage du mot de passe avant enregistrement dans la base de données
         usersDto.setPassword(passwordEncoder.encode(usersDto.getPassword()));
-        
+
         // Crée une nouvelle entité USERS et l'enregistre dans la base de données
         customUserDetailsService.registerUser(usersDto);
 
@@ -158,48 +153,50 @@ public class UsersController {
     })
     @GetMapping("/api/auth/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
-        // Récupère l'utilisateur à partir de la requête
         // Récupère le token du header de la requête
         String token = request.getHeader("Authorization").substring(7); // Supprime "Bearer "
         // Récupère l'email de l'utilisateur à partir du token
         String email = jwtService.getUserEmailFromToken(token);
         // Récupère l'utilisateur à partir de l'email
-        Optional<USERS> existingUsers = dbocp3Repository.findByEmail(email);
+        USERS user = dbocp3Repository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         // Crée une map avec les informations de l'utilisateur
-        Map<String, Object> userData = new LinkedHashMap<>();
+        Map<String, Object> userData = Map.of(
+            "name", user.getName(),
+            "email", user.getEmail(),
+            "created_at", user.getCreatedAt(),
+            "updated_at", user.getUpdatedAt()
+        );
 
-        if (existingUsers.isPresent()) {
-            USERS user = existingUsers.get();
-            
-            userData.put("name", user.getName());
-            userData.put("email", user.getEmail());
-            userData.put("created_at", user.getCreatedAt());
-            userData.put("updated_at", user.getUpdatedAt());   
-        } else {
-            
-        }
         // Retourne les informations de l'utilisateur sous format JSON
         return ResponseEntity.ok(userData);
     }
 
     @Hidden
-    @GetMapping("/api/user/{id}")
+    @GetMapping("/api/user/{id}") // Mappe cette méthode à l'URL "/api/user/{id}" pour les requêtes GET
     public ResponseEntity<UsersDataTransferObject> getUserEntity(@PathVariable Integer id) {
+        // Récupère l'utilisateur avec l'ID spécifié dans la base de données
         USERS userData = dbocp3Repository.findById(id).get();
+        // Crée un nouvel objet UsersDataTransferObject
         UsersDataTransferObject userDto = new UsersDataTransferObject();
+        // Remplit l'objet UsersDataTransferObject avec les données de l'utilisateur
         userDto.setId(userData.getId());
         userDto.setName(userData.getName());
         userDto.setEmail(userData.getEmail());
         userDto.setCreated_at(userData.getCreatedAt());
         userDto.setUpdated_at(userData.getUpdatedAt());
 
-    return ResponseEntity.ok(userDto);
+        // Retourne l'objet UsersDataTransferObject sous format JSON
+        return ResponseEntity.ok(userDto);
     }
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+
+    @ExceptionHandler(HttpMessageNotReadableException.class) // Cette méthode est appelée quand une exception HttpMessageNotReadableException est levée
     public ResponseEntity<?> handleInvalidJson(HttpMessageNotReadableException ex) {
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    return new ResponseEntity<>("{}", headers, HttpStatus.BAD_REQUEST);
+        // Crée un nouvel objet HttpHeaders et définit le type de contenu à JSON
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        // Retourne une réponse avec un corps vide et un statut HTTP 400 (Bad Request)
+        return new ResponseEntity<>("{}", headers, HttpStatus.BAD_REQUEST);
     }
 }
