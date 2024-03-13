@@ -50,8 +50,9 @@ mvn install
 
 ## Utilisation de l'API
 Une fois l'application lancée, aller sur http://localhost:3001/swagger-ui/index.html
-(dans le cas ou le port Tomcat defini est 3001)
-Pour obtenir un token jwt valide et tester l'API, utiliser Postman, faite un "Register user" et en retour, vous aurez un token valide que vous pouvez copier et coller pour tester les autres routes de l'API.
+(dans le cas ou le port Tomcat defini est 3001).
+
+Pour obtenir un token jwt valide et tester l'API, utiliser [Postman](https://www.postman.com/), faite un "Register user" et en retour, vous aurez un token valide que vous pouvez copier et coller pour tester les autres routes de l'API.
 
 ## Auteur
 
