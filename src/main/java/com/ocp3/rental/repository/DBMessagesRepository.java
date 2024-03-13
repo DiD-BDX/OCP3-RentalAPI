@@ -6,13 +6,13 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.ocp3.rental.model.MESSAGES;
+import com.ocp3.rental.model.MessagesEntity;
 
-public interface DBMessagesRepository extends JpaRepository<MESSAGES, Integer> {
-    public Optional<MESSAGES> findById(Integer id);
-    public List<MESSAGES> findByMessage(String message);
-    public List<MESSAGES> findByRentalId(Integer rentalId);
-    public List<MESSAGES> findByUserId(Integer userId);
-    public List<MESSAGES> findByCreatedAt(LocalDateTime createdAt);
-    public List<MESSAGES> findByUpdatedAt(LocalDateTime updatedAt);
+public interface DBMessagesRepository extends JpaRepository<MessagesEntity, Integer> {
+    public Optional<MessagesEntity> findById(Integer id);
+    public List<MessagesEntity> findByMessage(String message);
+    public List<MessagesEntity> findByRentalId(Integer rentalId);
+    public List<MessagesEntity> findByUserId(Integer userId);
+    public List<MessagesEntity> findByCreatedAt(LocalDateTime createdAt);
+    public List<MessagesEntity> findByUpdatedAt(LocalDateTime updatedAt);
 }

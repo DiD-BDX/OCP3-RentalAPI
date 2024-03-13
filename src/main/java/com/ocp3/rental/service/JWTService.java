@@ -21,7 +21,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.stereotype.Service;
 
-import com.ocp3.rental.model.USERS;
+import com.ocp3.rental.model.UsersEntity;
 import com.ocp3.rental.repository.DBocp3Repository;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -85,7 +85,7 @@ public class JWTService {
         // Récupère l'email de l'utilisateur à partir du token
         String email = getUserEmailFromToken(token);
         // Récupère l'utilisateur à partir de l'email
-        USERS user = dbocp3Repository.findByEmail(email)
+        UsersEntity user = dbocp3Repository.findByEmail(email)
             // Si l'utilisateur n'est pas trouvé, lance une exception
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
         // Retourne l'ID de l'utilisateur
@@ -101,7 +101,7 @@ public class JWTService {
         return jwt.getClaimAsString("sub").equals(email) && !JwtValidators.createDefault().validate(jwt).hasErrors();
     }
 
-    public USERS getUserFromRequest(HttpServletRequest request) {
+    public UsersEntity getUserFromRequest(HttpServletRequest request) {
         // Récupère le token du header de la requête
         String token = request.getHeader("Authorization").substring(7); // Supprime "Bearer "
         // Récupère l'email de l'utilisateur à partir du token

@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.ocp3.rental.DTO.UsersDataTransferObject;
-import com.ocp3.rental.model.USERS;
+import com.ocp3.rental.model.UsersEntity;
 import com.ocp3.rental.repository.DBocp3Repository;
 
 
@@ -30,9 +30,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override // Surcharge de la méthode loadUserByUsername de l'interface UserDetailsService
     public UserDetails loadUserByUsername(String useremail) throws UsernameNotFoundException {
         // Recherche un utilisateur par son email dans la base de données
-        Optional<USERS> userByEmail = dbocp3Repository.findByEmail(useremail);
+        Optional<UsersEntity> userByEmail = dbocp3Repository.findByEmail(useremail);
         if (userByEmail.isPresent()) {
-            USERS user = userByEmail.get();
+            UsersEntity user = userByEmail.get();
             return new User(user.getEmail(), user.getPassword(), getGrantedAuthorities());
         } else {
             throw new UsernameNotFoundException("User not found with email: " + useremail);
@@ -50,9 +50,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
 
-    public USERS registerUser(UsersDataTransferObject usersDto) {
+    public UsersEntity registerUser(UsersDataTransferObject usersDto) {
         // Crée une nouvelle instance de l'entité USERS
-        USERS users = new USERS();
+        UsersEntity users = new UsersEntity();
         // Remplit l'entité USERS avec les données de l'objet usersDto
         users.setEmail(usersDto.getEmail());
         users.setPassword(usersDto.getPassword());

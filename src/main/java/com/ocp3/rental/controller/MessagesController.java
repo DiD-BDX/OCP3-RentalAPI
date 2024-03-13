@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ocp3.rental.DTO.MessagesDataTransferObject;
-import com.ocp3.rental.model.MESSAGES;
-import com.ocp3.rental.model.RENTALS;
+import com.ocp3.rental.model.MessagesEntity;
+import com.ocp3.rental.model.RentalsEntity;
 import com.ocp3.rental.repository.DBMessagesRepository;
 import com.ocp3.rental.repository.DBRentalsRepository;
 
@@ -61,12 +61,12 @@ public class MessagesController {
 
         // Récupération de l'ID de location et vérification de son existence
         Integer messagesRentalId = messages.getRental_id();
-        Optional<RENTALS> rentalOpt = dbRentalsRepository.findById(messagesRentalId);
+        Optional<RentalsEntity> rentalOpt = dbRentalsRepository.findById(messagesRentalId);
         if (!rentalOpt.isPresent()) {
             return ResponseEntity.badRequest().body("{}");
         }
         // Récupération du propriétaire de la location
-        RENTALS rental = rentalOpt.get();
+        RentalsEntity rental = rentalOpt.get();
         Integer owner_id = rental.getOwnerId();
         messages.setUser_id(owner_id);
 
@@ -76,7 +76,7 @@ public class MessagesController {
         }
        
         // Création et sauvegarde du message
-        var messagesEntity = new MESSAGES();
+        var messagesEntity = new MessagesEntity();
         messagesEntity.setUserId(messages.getUser_id());
         messagesEntity.setMessage(messages.getMessage());
         messagesEntity.setRentalId(messages.getRental_id());
