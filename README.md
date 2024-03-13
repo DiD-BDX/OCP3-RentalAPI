@@ -16,7 +16,8 @@ mvn install
 ```
 3. Exécutez la commande `mvn install` pour installer les dépendances.
 4. Configurez les informations de connexion à la base de données dans le fichier `application.properties`.
-5. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
+5. Configurer la clef de sécurité dans le fichier `application.properties`.
+6. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
 
 ## Technologies utilisées
 
@@ -25,6 +26,11 @@ mvn install
 - MySQL
 - HTML/CSS
 - Bootstrap
+- Pour la documentation de l'API: Swagger (OpenApi)
+
+## Utilisation de l'API
+Une fois l'application lancée, aller sur http://localhost:3001/swagger-ui/index.html
+(dans le cas ou le port Tomcat defini est 3001)
 
 ## Auteur
 
