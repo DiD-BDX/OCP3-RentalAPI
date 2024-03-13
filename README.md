@@ -27,11 +27,11 @@ mvn install
     setx DB_PASSWORD "votre_password"
     ```
 5. Configurer la clef de sécurité dans le fichier une variable d'environnement (JWT_KEY).
-    Mac: 
+    Mac (terminal): 
     ```
     echo 'export JWT_KEY=votre_clef_de_securite_256k' >> ~/.bash_profile
     ```
-    PC:
+    PC (invite de commande):
     ```
     setx JWT_KEY "votre_clef_de_securite_256k"
     ```
