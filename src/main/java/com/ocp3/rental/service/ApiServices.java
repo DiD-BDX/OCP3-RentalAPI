@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class ApiServices {
+    @Value("${base.Picture.PhysicalPath}")
+    private String basePicturePhysicalPath;
+
 
     public String savePictureFromRequest(MultipartFile image, HttpServletRequest request) throws IOException {
         // Vérifiez si le fichier est vide
@@ -26,7 +30,7 @@ public class ApiServices {
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(image.getOriginalFilename()));
 
         // Créer le chemin du fichier
-        Path uploadPath = Paths.get("src/main/resources/static/images/");
+        Path uploadPath = Paths.get(basePicturePhysicalPath);
 
         // Créer le répertoire s'il n'existe pas
         if (!Files.exists(uploadPath)) {

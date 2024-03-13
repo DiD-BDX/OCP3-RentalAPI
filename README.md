@@ -15,8 +15,26 @@ cd ocp3-rental
 mvn install
 ```
 3. Exécutez la commande `mvn install` pour installer les dépendances.
-4. Configurez les informations de connexion à la base de données dans le fichier `application.properties`.
-5. Configurer la clef de sécurité dans le fichier `application.properties`.
+4. Configurez les informations de connexion à la base de données dans des variables d'environnement (DB_USERNAME et DB_PASSWORD).
+    Mac (terminal):
+    ```
+    echo 'export DB_USERNAME=votre_login' >> ~/.bash_profile
+    echo 'export DB_PASSWORD=votre_password' >> ~/.bash_profile
+    ```
+    PC (invite de commande):
+    ```
+    setx DB_USERNAME "votre_login"
+    setx DB_PASSWORD "votre_password"
+    ```
+5. Configurer la clef de sécurité dans le fichier une variable d'environnement (JWT_KEY).
+    Mac: 
+    ```
+    echo 'export JWT_KEY=votre_clef_de_securite_256k' >> ~/.bash_profile
+    ```
+    PC:
+    ```
+    setx JWT_KEY "votre_clef_de_securite_256k"
+    ```
 6. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
 
 ## Technologies utilisées
@@ -31,6 +49,7 @@ mvn install
 ## Utilisation de l'API
 Une fois l'application lancée, aller sur http://localhost:3001/swagger-ui/index.html
 (dans le cas ou le port Tomcat defini est 3001)
+Pour obtenir un token jwt valide et tester l'API, utiliser Postman, faite un "Register user" et en retour, vous aurez un token valide que vous pouvez copier et coller pour tester les autres routes de l'API.
 
 ## Auteur
 
