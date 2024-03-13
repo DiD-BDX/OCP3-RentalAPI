@@ -16,6 +16,7 @@ mvn install
 ```
 3. Exécutez la commande `mvn install` pour installer les dépendances.
 4. Configurez les informations de connexion à la base de données dans des variables d'environnement (DB_USERNAME et DB_PASSWORD).
+
     Mac (terminal):
     ```
     echo 'export DB_USERNAME=votre_login' >> ~/.bash_profile
@@ -27,6 +28,7 @@ mvn install
     setx DB_PASSWORD "votre_password"
     ```
 5. Configurer la clef de sécurité dans le fichier une variable d'environnement (JWT_KEY).
+
     Mac (terminal): 
     ```
     echo 'export JWT_KEY=votre_clef_de_securite_256k' >> ~/.bash_profile
