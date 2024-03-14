@@ -1,6 +1,8 @@
 // Définition du package
 package com.ocp3.rental.DTO;
 
+import java.time.LocalDate;
+
 // Importation des dépendances nécessaires
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +19,6 @@ public class MessagesDataTransferObject {
     private String message; // Le message
     private Integer user_id; // L'identifiant de l'utilisateur
     private Integer rental_id; // L'identifiant de la location
+    private LocalDate created_at; // La date de création
+    private LocalDate updated_at; // La date de mise à jour
 }

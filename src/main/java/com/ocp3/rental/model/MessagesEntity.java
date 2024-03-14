@@ -1,5 +1,4 @@
 package com.ocp3.rental.model;
-
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;

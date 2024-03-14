@@ -1,5 +1,6 @@
 package com.ocp3.rental.controller;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -80,6 +81,8 @@ public class MessagesController {
         messagesEntity.setUserId(messages.getUser_id());
         messagesEntity.setMessage(messages.getMessage());
         messagesEntity.setRentalId(messages.getRental_id());
+        messagesEntity.setCreatedAt(LocalDateTime.now());
+        messagesEntity.setUpdatedAt(LocalDateTime.now());
         dbMessagesRepository.save(messagesEntity);
 
         // Création de la réponse
