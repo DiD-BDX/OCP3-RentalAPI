@@ -44,8 +44,6 @@ mvn install
 - Java
 - Spring Boot
 - MySQL
-- HTML/CSS
-- Bootstrap
 - Pour la documentation de l'API: Swagger (OpenApi)
 
 ## Utilisation de l'API
