@@ -11,11 +11,21 @@ Pour installer le projet, suivez les étapes suivantes :
 2. Assurez-vous d'avoir Java installé sur votre système.
 ```bash
 git clone https://github.com/DiD-BDX/OCP3-RentalAPI.git
-cd ocp3-rental
+```
+3. Ouvrez une invite de commante (PC) ou une fenetre de terminal 5(Mac) dans le dossier local du projet.
+4. Exécutez la commande `mvn install` pour installer les dépendances.
+```
 mvn install
 ```
-3. Exécutez la commande `mvn install` pour installer les dépendances.
-4. Configurez les informations de connexion à la base de données dans des variables d'environnement (DB_USERNAME et DB_PASSWORD).
+5. Exécutez la commande `mvn install` pour installer les dépendances.
+6. Installez [mysql](https://dev.mysql.com/downloads/installer/) pour installer la base de donnée.
+7. Depuis une invite de commande ou une fenetre de terminal, créez la base de donnée et importez les tables depuis le fichier script.sql contenu dans le package (/main/resources/SQL/script/sql).
+```bash
+CREATE DATABASE nom_de_votre_database
+USE nom_de_votre_database
+source /chemin_du_fichier/script.sql
+```
+8. Configurez les informations de connexion à la base de données dans des variables d'environnement (DB_USERNAME et DB_PASSWORD).
 
     Mac (terminal Bash):
     ```
@@ -27,7 +37,7 @@ mvn install
     setx DB_USERNAME "votre_login"
     setx DB_PASSWORD "votre_password"
     ```
-5. Configurer la clef de sécurité dans le fichier une variable d'environnement (JWT_KEY).
+9. Configurer la clef de sécurité dans une variable d'environnement (JWT_KEY).
 
     Mac (terminal Bash): 
     ```
@@ -37,7 +47,10 @@ mvn install
     ```
     setx JWT_KEY "votre_clef_de_securite_256k"
     ```
-6. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
+10. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
+    ```
+    mvn spring-boot:run
+    ```
 
 ## Technologies utilisées
 
@@ -48,7 +61,7 @@ mvn install
 
 ## Utilisation de l'API
 Une fois l'application lancée, aller sur http://localhost:3001/swagger-ui/index.html
-(dans le cas ou le port Tomcat defini est 3001).
+(dans le cas ou le port Tomcat defini dans application.property est 3001).
 
 Pour obtenir un token jwt valide et tester l'API, utiliser [Postman](https://www.postman.com/), faite un "Register user" et en retour, vous aurez un token valide que vous pouvez copier et coller pour tester les autres routes de l'API.
 
