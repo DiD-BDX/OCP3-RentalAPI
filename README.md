@@ -9,23 +9,22 @@
 Pour installer le projet, suivez les étapes suivantes :
 1. Clonez ce dépôt de code sur votre machine locale.
 2. Assurez-vous d'avoir Java installé sur votre système.
-```bash
-git clone https://github.com/DiD-BDX/OCP3-RentalAPI.git
-```
-3. Ouvrez une invite de commante (PC) ou une fenetre de terminal 5(Mac) dans le dossier local du projet.
+    ```bash
+    git clone https://github.com/DiD-BDX/OCP3-RentalAPI.git
+    ```
+3. Ouvrez une invite de commante (PC) ou une fenetre de terminal (Mac) dans le dossier local du projet.
 4. Exécutez la commande `mvn install` pour installer les dépendances.
-```
-mvn install
-```
-5. Exécutez la commande `mvn install` pour installer les dépendances.
-6. Installez [mysql](https://dev.mysql.com/downloads/installer/) pour installer la base de donnée.
-7. Depuis une invite de commande ou une fenetre de terminal, créez la base de donnée et importez les tables depuis le fichier script.sql contenu dans le package (/main/resources/SQL/script/sql).
-```bash
-CREATE DATABASE nom_de_votre_database
-USE nom_de_votre_database
-source /chemin_du_fichier/script.sql
-```
-8. Configurez les informations de connexion à la base de données dans des variables d'environnement (DB_USERNAME et DB_PASSWORD).
+    ```
+    mvn install
+    ```
+5. Installez [mysql](https://dev.mysql.com/downloads/installer/) pour installer la base de donnée.
+6. Depuis une invite de commande ou une fenetre de terminal, créez la base de donnée et importez les tables depuis le fichier script.sql contenu dans le package (/main/resources/SQL/script/sql).
+    ```bash
+    CREATE DATABASE nom_de_votre_database
+    USE nom_de_votre_database
+    source /chemin_du_fichier/script.sql
+    ```
+7. Configurez les informations de connexion à la base de données dans des variables d'environnement (DB_USERNAME et       DB_PASSWORD).
 
     Mac (terminal Bash):
     ```
@@ -37,7 +36,7 @@ source /chemin_du_fichier/script.sql
     setx DB_USERNAME "votre_login"
     setx DB_PASSWORD "votre_password"
     ```
-9. Configurer la clef de sécurité dans une variable d'environnement (JWT_KEY).
+8. Configurer la clef de sécurité dans une variable d'environnement (JWT_KEY).
 
     Mac (terminal Bash): 
     ```
@@ -47,7 +46,7 @@ source /chemin_du_fichier/script.sql
     ```
     setx JWT_KEY "votre_clef_de_securite_256k"
     ```
-10. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
+9. Exécutez l'application en utilisant la commande `mvn spring-boot:run`.
     ```
     mvn spring-boot:run
     ```
