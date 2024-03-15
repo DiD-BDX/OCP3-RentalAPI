@@ -20,6 +20,7 @@ Pour installer le projet, suivez les étapes suivantes :
 5. Installez [mysql](https://dev.mysql.com/downloads/installer/) pour installer la base de donnée.
 6. Depuis une invite de commande ou une fenetre de terminal, créez la base de donnée et importez les tables depuis le fichier script.sql contenu dans le package (/main/resources/SQL/script/sql).
     ```bash
+    mysql -u root -p
     CREATE DATABASE nom_de_votre_database
     USE nom_de_votre_database
     source /chemin_du_fichier/script.sql
